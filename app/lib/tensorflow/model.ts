@@ -1,5 +1,6 @@
 import * as tf from "@tensorflow/tfjs";
 import * as Constant from "@/lib/constant";
+import { JSONObject } from "../definations";
 
 /**
  * Added two hidden layers with 64 and 128 units, respectively. This gives the model more capacity to learn complex relationships between ingredients and recipes.
@@ -9,7 +10,7 @@ import * as Constant from "@/lib/constant";
 
 
 // Define a simple model
-export const createRecipeModel = () => {
+export const createRecipeModel = (ingredientNo: number, recipeNo: number) => {
 	// Initializes a sequential model. A sequential model is a linear stack of layers where you can easily add new layers one after the other.
 	const model = tf.sequential();
 
@@ -20,7 +21,7 @@ export const createRecipeModel = () => {
 			// This specifies the input shape. Here, it indicates that the model expects input vectors of size 10.
 			// This corresponds to the number of ingredient features, as each recipe is represented by a vector of 10 elements
 			// (1 for presence and 0 for absence of each ingredient).
-			inputShape: [Constant.ingredients.length],
+			inputShape: [ingredientNo],
 			// This defines the number of neurons (or units) in this layer. In this case, there are 64 neurons.
 			units: 64,
 			// The ReLU (Rectified Linear Unit) activation function is used, which outputs the input directly 
@@ -38,7 +39,7 @@ export const createRecipeModel = () => {
 		tf.layers.dense({
 			// This specifies that the model will output 10 values, corresponding to the 10 possible recipes. 
 			// Each output represents the likelihood of the input matching each recipe.
-			units: Constant.ingredients.length, // Number of possible recipes
+			units: recipeNo, // Number of possible recipes
 			// The softmax activation function is used here. It converts the raw output scores (logits) into 
 			// probabilities by exponentiating the outputs and normalizing them. The result is a probability distribution over the 10 recipes, where the values will sum to 1
 			activation: "softmax",
@@ -61,13 +62,15 @@ export const createRecipeModel = () => {
 // Train the model on some example data
 export async function trainRecipeModel(
 	model: tf.Sequential,
-	ingredients: number[][],
-	recipes: number[][]
+	recipes: JSONObject[]
 ) {
+	
+	const  { ingredients, recipeTargets } = prepareTrainingData(recipes);
+
 	// This converts the ingredients array into a 2D tensor (xs) that TensorFlow.js can work with. Each row in the tensor corresponds to a recipe's ingredient vector.
 	const xs = tf.tensor2d(ingredients); // Convert input data to a tensor
 	// This converts the recipes array into a 2D tensor (ys) that serves as the target output for training. Each row corresponds to the one-hot encoded recipe vector.
-	const ys = tf.tensor2d(recipes); // Convert output (target) data to a tensor
+	const ys = tf.tensor2d(recipeTargets); // Convert output (target) data to a tensor
 
 	// This method is used to train the model with the provided input (xs) and output (ys) tensors. 
 	// The training process will adjust the model's weights to minimize the loss function defined during compilation.
@@ -85,3 +88,22 @@ export async function trainRecipeModel(
 		validationSplit: 0.2, // Use 20% of data for validation
 	});
 }
+
+const prepareTrainingData = (recipes: JSONObject) => {
+	
+	// Prepare the ingredients (xs) and recipes (ys) arrays
+	const ingredients: number[][] = [];
+	const recipeTargets: number[][] = [];
+  
+	recipes.forEach((recipe: JSONObject, index: number) => {
+	  // Use ingredientData for the input features
+	  ingredients.push(recipe.ingredientData);
+  
+	  // Create a one-hot encoded array for the target recipe
+	  const target = new Array(recipes.length).fill(0); // Initialize with zeros
+	  target[index] = 1; // Mark the current recipe as the target (one-hot encoding)
+	  recipeTargets.push(target);
+	});
+  
+	return { ingredients, recipeTargets };
+  }

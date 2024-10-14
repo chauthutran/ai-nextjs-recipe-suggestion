@@ -1,51 +1,64 @@
-'use server';
+"use server";
 
 import connectToDatabase from "@/lib/mongodb/db";
 import Recipe from "./schemas/Recipe.schema";
-import * as Constant from "@/lib/constant";
+import * as Utils from "@/lib/utils";
+import Ingredient from "./schemas/Ingredient.schema";
 
-// Function to update or insert recipes
-export async function updateRecipes() {
-    try {
-        
-		console.log("----- updateRecipes ");
+export async function fetchRecipes() {
+	try {
+		await connectToDatabase();
 
-    await connectToDatabase();
-    const recipes = await Recipe.find({}).lean();
-    console.log(recipes);
-      for (let i=0; i<recipes.length; i++ ) {
-        const recipe = recipes[i];
-        const ingredients = recipe.ingredients.join(" ");
-        const ingredientData = parseIngredients(ingredients);
-        recipe.ingredientData = ingredientData;
-        
-        // Upsert (update or insert) the recipe
-        console.log(recipe);
-        const data = await Recipe.findByIdAndUpdate(recipe._id, recipe, { new: true });
-        console.log(data.ingredientData);
-      }
-      
-      console.log('Recipes updated successfully!');
-    } catch (error) {
-      console.error('Error updating recipes:', error);
-    } finally {
-    //   mongoose.connection.close();
-    }
-  }
-  
+		const recipes = await Recipe.find();
 
-const parseIngredients = (text: string): number[] => {
-    // Basic keyword-based parsing (expand this list as needed)
+		return { status: "success", data: Utils.cloneJSONObject(recipes) };
+	} catch (error) {
+		return { status: "error", data: Utils.getResponseErrMessage(error) };
+	}
+}
 
-    // Initialize an array of 10 ingredients (all 0 by default)
-    const ingredientArray = Array(Constant.ingredients.length).fill(0);
+// Function to update ingredientData for ALL existing recipes in Mongodb
+export async function updateIngredientDataForRecipes() {
+	try {
+		await connectToDatabase();
+        let ingredientList = await Ingredient.find({}, "name");
+        ingredientList = ingredientList.map((item) => item.name);
 
-    // Check if the text contains any known ingredient and mark it as "1" in the array
-    Constant.ingredients.forEach((ingredient, index) => {
-        if (text.toLowerCase().includes(ingredient.toLowerCase())) {
-            ingredientArray[index] = 1;
-        }
-    });
-console.log(text + " ---- [" + ingredientArray + "]");
-    return ingredientArray;
+        const recipes = await Recipe.find({}).lean();
+		console.log(recipes);
+		for (let i = 0; i < recipes.length; i++) {
+			const recipe = recipes[i];
+			const ingredients = recipe.ingredients.join(" ");
+			const ingredientData = parseIngredients(
+				ingredients,
+				ingredientList
+			);
+			recipe.ingredientData = ingredientData;
+
+			// Upsert (update or insert) the recipe
+			const data = await Recipe.findByIdAndUpdate(recipe._id, recipe, {
+				new: true,
+			});
+		}
+
+		console.log("Recipes updated successfully!");
+	} catch (error) {
+		console.error("Error updating recipes:", error);
+	}
+}
+
+const parseIngredients = (text: string, ingredients: string[]): number[] => {
+	// Basic keyword-based parsing (expand this list as needed)
+
+	// Initialize an array of 10 ingredients (all 0 by default)
+	const ingredientArray = Array(ingredients.length).fill(0);
+
+	// Check if the text contains any known ingredient and mark it as "1" in the array
+	ingredients.forEach((ingredient, index) => {
+		if (text.toLowerCase().includes(ingredient.toLowerCase())) {
+			ingredientArray[index] = 1;
+		}
+	});
+
+	return ingredientArray;
 };
