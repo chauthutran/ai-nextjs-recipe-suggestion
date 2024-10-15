@@ -13,6 +13,7 @@
     "@tensorflow/tfjs": "^4.21.0",
     "@types/mongoose": "^5.11.97",
     "@types/react-icons": "^3.0.0",
+    "cloudinary": "^2.5.1",
     "mongoose": "^8.7.1",
     "next": "14.2.13",
     "react": "^18",

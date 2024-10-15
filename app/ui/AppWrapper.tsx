@@ -10,12 +10,14 @@ import { JSONObject } from '@/lib/definations';
 import { useRecipe } from '@/contexts/RecipeContext';
 import RecipeDetails from './recipeList/RecipeDetails';
 import RecipeSearch from './RecipeSearchPage';
+import RecipeForm from './recipeList/RecipeForm';
 
 
 export default function AppWrapper() {
 
 	return (
 		<div className="mx-5 my-5">
+			<RecipeForm />
 			<RecipeSearch />
 
 			
