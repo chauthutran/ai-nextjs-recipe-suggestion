@@ -18,7 +18,7 @@ export default function AppWrapper() {
 
 	const [model, setModel] = useState<tf.Sequential | null>(null);
 	// const [model, setModel] = useState<tf.LayersModel | null>(null);
-	const [recipe, setRecipe] = useState<JSONObject | null>(null);
+	const [predictedRecipes, setPredictedRecipes] = useState<JSONObject[] | null>(null);
 
 	const [inputText, setInputText] = useState('');
 
@@ -53,7 +53,7 @@ export default function AppWrapper() {
 		const model = createRecipeModel(ingredients!.length, recipes!.length);
 
 		// Train the model
-		await trainRecipeModel(model, recipes!);
+		await trainRecipeModel(model, recipes!, ingredients!);
 		console.log('Model trained:', model);
 
 		setModel(model); // Store the trained model
@@ -77,28 +77,49 @@ export default function AppWrapper() {
 		const inputTensor = tf.tensor2d([ingredientArray], [1, ingredients!.length]);
         // Perform the prediction
 		const prediction = model.predict(inputTensor) as tf.Tensor;
-		// console.log("inputTensor", await prediction.array());
+		// console.log("Prediction Array", await prediction.array());
 
-        // Get the predicted class index from the prediction
-        const predictionArray = prediction.arraySync() as number[][]; // Convert tensor to array
-        const predictedIndex = predictionArray[0].indexOf(Math.max(...predictionArray[0])); // Get the index of the highest value
+        // // Get the predicted class index from the prediction
+        // const predictionArray = prediction.arraySync() as number[][]; // Convert tensor to array
+// console.log("====== Prediction Array 1", predictionArray[0]);
+// console.log("Prediction Array 2", Math.max(...predictionArray[0]));
 
-        // Check if the predictedIndex corresponds to any recipe in the database
-        if (predictedIndex >= 0 && predictedIndex < recipes!.length) {
-            const predictedRecipe = recipes![predictedIndex];
 
-            // Log the predicted recipe name and return it
-            console.log('Predicted Recipe:', predictedRecipe);
-            // return predictedRecipe;
-            setRecipe(predictedRecipe);
+    // Convert prediction to array and get the predicted probabilities
+    const predictedProbabilities = await prediction.array() as number[][]; // Directly assert to number[][]
+
+
+ // Assuming the model output is an array of probabilities for each recipe
+    // Get the top 3 predictions
+    const topIndices = predictedProbabilities[0]
+        .map((prob, index) => ({ index, prob }))
+        .sort((a, b) => b.prob - a.prob)
+        .slice(0, 3)
+        .map(item => item.index);
+
+    // Get the recipe names for the top predictions
+    const predictedRecipes = topIndices.map(index => recipes![index]);
+
+	setPredictedRecipes(predictedRecipes);
+        // const predictedIndex = predictionArray[0].indexOf(Math.max(...predictionArray[0])); // Get the index of the highest value
+
+        // // Check if the predictedIndex corresponds to any recipe in the database
+        // if (predictedIndex >= 0 && predictedIndex < recipes!.length) {
+        //     const predictedRecipe = recipes![predictedIndex];
+
+
+        //     // Log the predicted recipe name and return it
+        //     console.log(`Predicted Recipe: ${predictedIndex} --- ` , JSON.stringify(predictedRecipe));
+        //     // return predictedRecipe;
+        //     setRecipe(predictedRecipe);
             
 
-		// // Get the index of the highest predicted value
-		// const predictedRecipeIndex = prediction.argMax(-1).dataSync()[0];
+		// // // Get the index of the highest predicted value
+		// // const predictedRecipeIndex = prediction.argMax(-1).dataSync()[0];
 
 
-		// setRecipe(`You can cook: ${recipeNames[predictedRecipeIndex]}`);
-        }
+		// // setRecipe(`You can cook: ${recipeNames[predictedRecipeIndex]}`);
+        // }
 	};
 
 
@@ -108,7 +129,7 @@ export default function AppWrapper() {
 
 	return (
 		<div className="container">
-            {/* <button className='bg-red-600' onClick={() => dbService.updateIngredientDataForRecipes()}>Update</button> */}
+
 			<h1>Recipe Suggestion</h1>
 			<input
 				type="text"
@@ -127,11 +148,12 @@ export default function AppWrapper() {
 				{/* <button className="bg-blue-500" onClick={predictRecipe}>Generate Recipe</button> */}
 			</div>
 			
-      {recipe && (
+      {predictedRecipes !== null && (
         <div>
           <h2>Suggested Recipe:</h2>
-          <RecipeDetails data={recipe} />
-          {/* <<p>{recipe}</p>> */}
+          {predictedRecipes.map((recipe: JSONObject) => (
+			<RecipeDetails key={`predit_${recipe._id}`} data={recipe} />
+		  ))}
         </div>
       )}
 		</div>
