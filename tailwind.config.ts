@@ -11,6 +11,10 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "leaf-green": "#09b44d"
+      },
+      fontFamily: {
+        sans: ['Arial', 'Helvetica', 'sans-serif'], // You can add more fallback fonts
       },
     },
   },

@@ -38,6 +38,7 @@ export const IngredientProvider = ({ children }: { children: ReactNode }) => {
 	const [processStatus, setProcessStatus] = useState<string>("");
 
 	useEffect(() => {
+		console.log("=== IngredientProvider");
         if (ingredients === null) {
             fetchIngredients();
         }
@@ -47,8 +48,10 @@ export const IngredientProvider = ({ children }: { children: ReactNode }) => {
 	const fetchIngredients = async () => {
 		setProcessStatus(Constant.RESPONSE_INGREDIENT_REQUEST);
 		setError(null);
+		console.log("=== fetchIngredients: " + 1);
 
 		const response: JSONObject = await dbService.fetchIngredients();
+		console.log(response);
 		if (response.status != "success")  {
 			setProcessStatus(Constant.RESPONSE_INGREDIENT_FAILURE);
 			setError(response.message);
