@@ -12,20 +12,22 @@ import { GiSolidLeaf } from 'react-icons/gi';
 import { SiLeaflet } from 'react-icons/si';
 import Image from 'next/image';
 import ReceipeList from './recipeList/RecipeList';
+import { useCategory } from '@/contexts/CategoryContext';
 
 
 export default function RecipeSearchPage() {
 
+    const { categories } = useCategory();
     const { ingredients } = useIngredient();
     const { recipeData, recipes } = useRecipe();
 
-    const [model, setModel] = useState<tf.Sequential | null>(null);
+    const [model, setModel] = useState<tf.LayersModel | null>(null);
     // const [model, setModel] = useState<tf.LayersModel | null>(null);
     const [predictedRecipes, setPredictedRecipes] = useState<JSONObject[] | null>(null);
     const [inputText, setInputText] = useState('');
 
     useEffect(() => {
-        if( ingredients !== null && recipeData!== null && recipes !== null ) {
+        if( categories !== null && ingredients !== null && recipeData!== null && recipes !== null ) {
             loadModel();
         }
     }, [ingredients, recipeData, recipes])
@@ -53,14 +55,81 @@ export default function RecipeSearchPage() {
 
     const loadModel = async () => {
         console.log("Model is loading");
-        const _model = createRecipeModel(ingredients!.length, recipes!.length);
+        const _model = createRecipeModel(ingredients!.length, recipes!.length, categories!.length);
 
+        console.log("Model is loading 1");
+        const categoryNames = categories?.map(item => item.name);
         // Train the model
-        await trainRecipeModel(_model, recipes!, ingredients!);
+        await trainRecipeModel(_model, recipes!, ingredients!, categoryNames!);
         console.log("Model is loaded");
 
         setModel(_model); // Store the trained model
     };
+
+    function convertIngredientsToFeatures(
+        inputText: string,
+        ingredientsList: string[],
+        categoriesList: string[]
+    ): number[] {
+        // Step 1: Normalize text to lowercase
+        const normalizedText = inputText.toLowerCase();
+        
+        // Step 2: Tokenization
+        const tokens = normalizedText.split(/\s+/);
+        
+        // Step 3: Remove stop words
+        const stopWords: string[] = ["i", "to", "with", "want", "cook", "the", "and", "for"]; // Add more as needed
+        const filteredTokens = tokens.filter(token => !stopWords.includes(token));
+        
+        // Step 4: Create ingredient and category index maps
+        const ingredientIndex: { [key: string]: number } = {};
+        ingredientsList.forEach((ingredient, index) => {
+            ingredientIndex[ingredient] = index;
+        });
+    
+        const categoryIndex: { [key: string]: number } = {};
+        categoriesList.forEach((category, index) => {
+            categoryIndex[category] = index;
+        });
+    
+        // Step 5: Generate one-hot vector for ingredients
+        const ingredientVector = Array(ingredientsList.length).fill(0);
+        filteredTokens.forEach(token => {
+            if (ingredientIndex[token] !== undefined) {
+                ingredientVector[ingredientIndex[token]] = 1; // Set to 1 if the ingredient is present
+            }
+        });
+    
+        // Step 6: Generate one-hot vector for categories
+        const categoryVector = Array(categoriesList.length).fill(0);
+        const identifiedCategories = filteredTokens.filter(token => categoryIndex[token] !== undefined);
+        identifiedCategories.forEach(category => {
+            if (categoryIndex[category] !== undefined) {
+                categoryVector[categoryIndex[category]] = 1; // Set to 1 if the category is present
+            }
+        });
+    
+        // Step 7: Combine ingredient and category vectors
+        const combinedInputVector = ingredientVector.concat(categoryVector);
+    
+        return combinedInputVector; // Return the final feature vector
+        // return ingredientVector;
+    }
+
+    // function convertIngredientsToFeatures(inputText: string, ingredients: string[], categoryNames: string[]): number[][] {
+    //     const featureVector = new Array(ingredients.length).fill(0);
+      
+    //     // Parse the input text for ingredients and mark the feature vector accordingly
+    //     ingredients.forEach((ingredient, index) => {
+    //       if (inputText.toLowerCase().includes(ingredient.toLowerCase())) {
+    //         featureVector[index] = 1;
+    //       }
+    //     });
+      
+    //     // Return a 2D array, since TensorFlow.js expects a 2D tensor (even for a single input)
+    //     return [featureVector]; // Wrap in an array to make it 2D
+    //   }
+    
 
     const predictRecipe = async () => {
         if (!model) {
@@ -77,7 +146,12 @@ export default function RecipeSearchPage() {
         }
 
         // Convert the array to a tensor (1 sample with `ingredients.length` features) and predict the recipe
-        const inputTensor = tf.tensor2d([ingredientArray], [1, ingredients!.length]);
+        // const inputTensor = tf.tensor2d([ingredientArray], [1, ingredients!.length]);
+        
+        const categoryNames = categories!.map(item => item.name);
+        const inputTensor = tf.tensor2d(convertIngredientsToFeatures(inputText, ingredients!, categoryNames!));
+
+
         // Perform the prediction
         const prediction = model.predict(inputTensor) as tf.Tensor;
         // console.log("Prediction Array", await prediction.array());
@@ -107,7 +181,7 @@ export default function RecipeSearchPage() {
     };
 
 
-    if (ingredients === null || recipeData === null || model === null ) return (
+    if ( categories === null || ingredients === null || recipeData === null || model === null ) return (
         <div className="flex space-x-5">
             <div className="italic">Loading data and model</div>
             <SpinningIcon className="text-gray-400" />

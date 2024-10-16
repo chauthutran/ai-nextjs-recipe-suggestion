@@ -14,3 +14,34 @@ export const getResponseErrMessage = (ex: any) => {
     
     return `An unexpected error occurred: ${ex}`;
 }
+
+/** 
+ * Relate to Searching/Replace data in a list
+ *  */ 
+
+export const findItemFromList = ( list: JSONObject[], value: any, propertyName: string ) =>
+{
+    let item = null as JSONObject | null;
+
+    if( list )
+    {
+        // If propertyName being compare to has not been passed, set it as 'id'.
+        if ( propertyName === undefined )
+        {
+            propertyName = "id";
+        }
+
+        for( let i = 0; i < list.length; i++ )
+        {
+            let listItem = list[i];
+
+            if ( listItem[propertyName] == value )
+            {
+                item = listItem;
+                break;
+            }
+        }
+    }
+
+    return item;
+}

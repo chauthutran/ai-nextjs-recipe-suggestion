@@ -17,7 +17,14 @@ export default function AppWrapper() {
 
 	return (
 		<div className="mx-5 my-5">
-			<RecipeForm />
+			
+            {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateImages() }>Update Images</button> */}
+            {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateCategories() }>Update Categories</button>
+            <button className='bg-blue-500' onClick={() => dbService.getRecipesWithoutCategories() }>Recipes without Categories</button> */}
+
+			
+			{/* <RecipeForm /> */}
+			
 			<RecipeSearch />
 
 			

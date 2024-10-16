@@ -35,8 +35,6 @@ export default function RecipeForm() {
 
     return (
         <div className="bg-white p-5 rounded-lg shadow-lg">
-            <button className="bg-blue-500" onClick={() => dbService.updateImages()}>Update Images</button>
-
             
             <h2 className="text-3xl font-bold mb-5 flex items-center justify-center text-center">Post Message</h2>
 

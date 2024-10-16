@@ -8,6 +8,11 @@ const RecipeSchema = new mongoose.Schema({
     ingredients: { type: [String], required: true }, // Array of strings
     method: { type: [String], required: true }, // Array of strings
     imageUrl: { type: String },
+    categories: [{
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+    }],
     createdAt: {type: Date, default: new Date()}
 },
 {
