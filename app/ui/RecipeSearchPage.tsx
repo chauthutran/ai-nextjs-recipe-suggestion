@@ -114,6 +114,8 @@ export default function RecipeSearchPage() {
         }
         
         const categoryNames = categories!.map(item => item.name);
+        console.log(categoryNames.join(", "));
+        console.log(ingredients!.join(", "));
         const featureArray = convertIngredientsToFeatures(inputText, ingredients!, categoryNames!);
 
         // Create tensors
