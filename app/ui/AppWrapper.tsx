@@ -24,7 +24,7 @@ export default function AppWrapper() {
 
 			
 			{/* <RecipeForm /> */}
-			
+
 			<RecipeSearch />
 
 			

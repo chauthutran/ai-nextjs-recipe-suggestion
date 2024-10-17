@@ -9,17 +9,24 @@ import Category from "./schemas/Category.schema";
 import * as Utils from "@/lib/utils";
 
 
+// cloudinary.v2.config({
+//     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//     api_key: process.env.CLOUDINARY_API_KEY,
+//     api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
+
+
 cloudinary.v2.config({
-    cloud_name: 'dr533yqid',
-    api_key: '344935136281222',
-    api_secret: `bKE0gc2JcdvW1MTw9ndUzXPbIjw`,
+	cloud_name: "dr533yqid",
+    api_key: "344935136281222",
+    api_secret: "bKE0gc2JcdvW1MTw9ndUzXPbIjw",
 });
 
 export async function fetchRecipes() {
 	try {
 		await connectToDatabase();
 
-		const recipes = await Recipe.find();
+		const recipes = await Recipe.find().populate("categories");
 
 		return { status: "success", data: Utils.cloneJSONObject(recipes) };
 	} catch (error) {
@@ -43,7 +50,10 @@ export async function createRecipe(payload: JSONObject) {
 					}
 				);
 				imageUrl = result.secure_url;
-				console.log(payload.name + " --- " + imageUrl);
+
+				
+				const resultImg = {name: payload.name,imageUrl };
+				console.log(JSON.stringify(resultImg));
 			} catch (error) {
 				console.error("Error uploading to Cloudinary:", error);
 			}
@@ -60,18 +70,23 @@ export async function updateImages() {
     try {
         await connectToDatabase();
 
-		const imageList = [	{"name": "Chicken Shawarma", "url": "https://res.cloudinary.com/dr533yqid/image/upload/v1729045968/recipes/gy5p6svtiuh1mtcbzwjx.jpg"},
-			{"name": "Garlic Mashed Potatoes", "url": "https://res.cloudinary.com/dr533yqid/image/upload/v1729045985/recipes/niaflssb1ngea4jgm6nc.jpg"},
-			{"name": "Pesto Pasta", "url": "https://res.cloudinary.com/dr533yqid/image/upload/v1729046004/recipes/rkpnhwphhclu5xmvglck.jpg"}]
-
+		const imageList = 
+		[{"name":"Roasted Cauliflower","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148215/recipes/gkedoigbzkhis3cmzj8o.jpg"},
+		{"name":"Greek Salad","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148236/recipes/qbsul7q3tduw5vtc0bjk.jpg"},
+		{"name":"Lentil Salad","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148243/recipes/ezpa1qp8w6stpureyqnq.jpg"},
+		{"name":"Chicken and Rice Casserole","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148250/recipes/azp2vk3khdspeeaoual7.jpg"},
+		{"name":"Vegetable Stir Fry","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148258/recipes/imvmlen29rggnusjffp0.jpg"},
+		{"name":"Quiche Lorraine","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148263/recipes/gupppeyhuy1r5fmbbzdr.jpg"},
+		{"name":"Beef and Broccoli Stir-Fry","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148270/recipes/g8vxvfotw0wkd2nrsuna.jpg"},
+		{"name":"Roasted Bell Pepper Soup","imageUrl":"https://res.cloudinary.com/dr533yqid/image/upload/v1729148276/recipes/jddvq2zgikkb81kb3vxe.jpg"}];
 			for( let i=0; i<imageList.length; i++ ) {
 				const imgData = imageList[i];
 				const recipe = await Recipe.findOne({ name: imgData.name.trim() });
 				// console.log(recipe);
 				if(recipe !== null ) {
-					recipe.imageUrl = imgData.url.trim();
-					const saved = await Recipe.updateOne({ _id: recipe._id }, { imageUrl: imgData.url.trim() });
-					// console.log(saved);
+					recipe.imageUrl = imgData.imageUrl.trim();
+					const saved = await Recipe.updateOne({ _id: recipe._id }, { imageUrl: imgData.imageUrl.trim() });
+					
 				}
 			}
 		console.log("Uploaded images");

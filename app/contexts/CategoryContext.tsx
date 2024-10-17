@@ -55,8 +55,8 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
 			setError(response.message);
 		}
 		else {
-			const list = response.data.map((item: JSONObject) => item.name )
-			setCategorys(list);
+			// const list = response.data.map((item: JSONObject) => item.name )
+			setCategorys(response.data);
 			setProcessStatus(Constant.RESPONSE_CATEGORY_SUCCESS);
 		}
 	};

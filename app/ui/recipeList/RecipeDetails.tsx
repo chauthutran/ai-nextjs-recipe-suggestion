@@ -1,10 +1,17 @@
 import { JSONObject } from "@/lib/definations";
+import Image from "next/image";
 
 export default function RecipeDetails({ data }: { data: JSONObject }) {
 
     return (
-        <div key={data._id} className="p-4 border-2 border-leaf-green rounded-md shadow-sm w-full">
+        <div key={data._id} className="p-4 border-2 border-leaf-green rounded-md shadow-sm w-full space-y-3">
             <h2 className="text-xl font-semibold">{data.name}</h2>
+            {data.imageUrl && <Image
+                src={data.imageUrl} // Path from the public folder
+                alt="Logo"
+                width={300} // Set width and height
+                height={500}
+            />}
             <div className="mt-2">
                 <strong>Ingredients:</strong>
                 <ul className="list-disc pl-5">

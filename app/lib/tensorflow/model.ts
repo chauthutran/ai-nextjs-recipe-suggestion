@@ -7,130 +7,189 @@ import { JSONObject } from "../definations";
  * Each layer uses the relu (Rectified Linear Unit) activation function, which helps the model capture non-linear relationships.
  *
  */
+export const createRecipeModel = (
+	ingredientNo: number,
+	recipeNo: number,
+	categoryNo: number
+) => {
+	// Input for ingredients
+	const ingredientInput = tf.input({
+		shape: [ingredientNo],
+		name: "ingredientInput",
+	});
+	let x = tf.layers
+		.dense({ units: 128, activation: "relu" })
+		.apply(ingredientInput);
+	x = tf.layers
+		.dense({ units: 64, activation: "relu" })
+		.apply(x) as tf.SymbolicTensor;
 
-export const createRecipeModel = (ingredientNo: number, recipeNo: number, categoryNo: number) => {
-    // Input layer
-    const input = tf.input({ shape: [ingredientNo] });
+	// Input for categories
+	const categoryInput = tf.input({
+		shape: [categoryNo],
+		name: "categoryInput",
+	});
+	let y = tf.layers
+		.dense({ units: 32, activation: "relu" })
+		.apply(categoryInput) as tf.SymbolicTensor;
 
-    // Hidden layers
-    const hidden = tf.layers.dense({ units: 128, activation: 'relu' }).apply(input);
-    const hidden2 = tf.layers.dense({ units: 64, activation: 'relu' }).apply(hidden);
+	// Concatenate the ingredient and category paths
+	const combined = tf.layers.concatenate().apply([x, y]);
 
-    // Output layer for recipes
-    const recipeOutput = tf.layers.dense({ units: recipeNo, activation: 'softmax', name: 'recipeOutput' }).apply(hidden2) as tf.SymbolicTensor;
+	// Output layer for recipes
+	const recipeOutput = tf.layers
+		.dense({ units: recipeNo, activation: "softmax", name: "recipeOutput" })
+		.apply(combined) as tf.SymbolicTensor;
 
-    // Output layer for categories
-    const categoryOutput = tf.layers.dense({ units: categoryNo, activation: 'softmax', name: 'categoryOutput' }).apply(hidden2) as tf.SymbolicTensor;
+	// Output layer for categories
+	const categoryOutput = tf.layers
+		.dense({
+			units: categoryNo,
+			activation: "softmax",
+			name: "categoryOutput",
+		})
+		.apply(combined) as tf.SymbolicTensor;
 
-    // Create the model with both outputs
-    const model = tf.model({
-        inputs: input,
-        outputs: [recipeOutput, categoryOutput] // Outputs as an array of SymbolicTensor
-    });
+	// Create the model with two inputs and two outputs
+	const model = tf.model({
+		inputs: [ingredientInput, categoryInput],
+		outputs: [recipeOutput, categoryOutput],
+	});
+	// Compile the model
+	model.compile({
+		optimizer: "adam",
+		loss: {
+			recipeOutput: "categoricalCrossentropy",
+			categoryOutput: "categoricalCrossentropy",
+		},
+		metrics: {
+			recipeOutput: "accuracy",
+			categoryOutput: "accuracy",
+		},
+	});
 
-    // Compile the model
-    model.compile({
-        optimizer: 'adam',
-        loss: {
-            recipeOutput: 'categoricalCrossentropy', // Loss for recipe output
-            categoryOutput: 'categoricalCrossentropy', // Loss for category output
-        },
-        metrics: {
-            recipeOutput: 'accuracy', // Metrics for recipe output
-            categoryOutput:'accuracy', // Metrics for category output
-        }
-    });
-
-    return model;
+	return model;
 };
-
 
 // Define a simple model
 export async function trainRecipeModel(
 	model: tf.LayersModel,
 	recipes: JSONObject[],
 	ingredients: string[],
-    categories: string[]
+	categories: string[]
 ) {
-	const { ingredientVectors, recipeTargets, categoryTargets } = prepareTrainingData(
-		recipes,
-		ingredients,
-        categories
-	);
+	const {
+		ingredientVectors,
+		categoryVectors,
+		recipeTargets,
+		categoryTargets,
+	} = prepareTrainingData(recipes, ingredients, categories);
 
 	// // Convert input data (ingredient vectors) to 2D tensor
-	// const xs = tf.tensor2d(ingredientVectors, [ingredientVectors.length, ingredients.length]);
+	const ingredientTensor = tf.tensor2d(ingredientVectors, [
+		ingredientVectors.length,
+		ingredients.length,
+	]); // Shape [batchSize, 63]
 
-	// // Convert target data (one-hot encoded recipe targets) to 2D tensor
-	// const ys = tf.tensor2d(recipeTargets, [recipeTargets.length, recipes.length]);
+	const categoryTensor = tf.tensor2d(categoryVectors, [
+		categoryVectors.length,
+		categories.length,
+	]); // Shape [batchSize, 12]
 
-	const xs = tf.tensor2d(ingredientVectors); // Features
 	const ys = {
-		recipeTargets: tf.tensor2d(recipeTargets), // Targets for recipes
-		categoryTargets: tf.tensor2d(categoryTargets) // Targets for categories
+		recipeTargets: tf.tensor2d(recipeTargets, [
+			recipeTargets.length,
+			recipes.length,
+		]), // Targets for recipes
+		categoryTargets: tf.tensor2d(categoryTargets, [
+			categoryTargets.length,
+			categories.length,
+		]), // Targets for categories
 	};
-	// // Example for preparing labels
-	// const recipeLabels = recipes.map( item => item.name);
-	// const ys = {
-	// 	recipeOutput: tf.tensor2d(recipeLabels, [recipeLabels.length, recipeLabels.length]),
-	// 	categoryOutput: tf.tensor2d(categories, [categories.length, categories.length])
-	// };
-
-	// // Ensure input and output shapes match
-	// console.log(`Input shape: ${xs.shape}`);
-	// console.log(`Target shape: ${ys.shape}`);
 
 	// Train the model
-	await model.fit(xs, { 
-		recipeOutput: ys.recipeTargets, // Assuming ys is structured correctly
-		categoryOutput: ys.categoryTargets 
-	}, {
-		epochs: 100,
-		batchSize: 32,
-		// shuffle: true,
-		validationSplit: 0.2,
-		// callbacks: {
-		// 	onEpochEnd: (epoch, logs: any) => {
-		// 		console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
-		// 	},
-		// },
-	});
+	await model.fit(
+		[ingredientTensor, categoryTensor],
+		{
+			recipeOutput: ys.recipeTargets, // Assuming ys is structured correctly
+			categoryOutput: ys.categoryTargets,
+		},
+		{
+			epochs: 100,
+			batchSize: 32,
+			// shuffle: true,
+			validationSplit: 0.2,
+			// callbacks: {
+			// 	onEpochEnd: (epoch, logs: any) => {
+			// 		console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+			// 	},
+			// },
+		}
+	);
 }
 
-const prepareTrainingData = (recipes: JSONObject[], ingredients: string[], categories: string[]) => {
-    const ingredientVectors: number[][] = [];
-    const recipeTargets: number[][] = [];
-    const categoryTargets: number[][] = []; // New target for categories
+const prepareTrainingData = (
+	recipes: JSONObject[],
+	ingredients: string[],
+	categories: string[]
+) => {
+	const ingredientVectors: number[][] = [];
+	const categoryVectors: number[][] = [];
+	const recipeTargets: number[][] = [];
+	const categoryTargets: number[][] = []; // New target for categories
 
-    recipes.forEach((recipe: JSONObject, recipeIndex: number) => {
-        const ingredientArray = new Array(ingredients.length).fill(0);
-        const recipeIngredientStr = recipe.ingredients.join(" ");
+	recipes.forEach((recipe: JSONObject, recipeIndex: number) => {
+		const ingredientArray = new Array(ingredients.length).fill(0);
+		const recipeIngredientStr = recipe.ingredients.join(" ");
 
-        ingredients.forEach((ingredient, index) => {
-            if (recipeIngredientStr.toLowerCase().indexOf(ingredient.toLowerCase()) >= 0) {
-                ingredientArray[index] = 1;
-            }
-        });
-        ingredientVectors.push(ingredientArray);
+		const categoryArray = new Array(categories.length).fill(0);
+		const recipeCategoryStr = recipe.categories
+			.map((item: JSONObject) => item.name)
+			.join(", ")
+			.toLowerCase();
 
-        // Create a corresponding target output for recipes (one-hot encoding)
-        const recipeTargetVector = new Array(recipes.length).fill(0);
-        recipeTargetVector[recipeIndex] = 1;
-        recipeTargets.push(recipeTargetVector);
+		// INPUT - ingredientVectors
+		ingredients.forEach((ingredient, index) => {
+			if (
+				recipeIngredientStr
+					.toLowerCase()
+					.indexOf(ingredient.toLowerCase()) >= 0
+			) {
+				ingredientArray[index] = 1;
+			}
+		});
+		ingredientVectors.push(ingredientArray);
 
-        // Create a corresponding target output for categories
-        const categoryTargetVector = new Array(categories.length).fill(0);
-        // Assuming categories are defined in your recipe, populate them appropriately
-        // For instance, if the recipe has categories in an array `recipe.categories`:
-        recipe.categories.forEach((category: string) => {
-            // const categoryIndex = getCategoryIndex(category); // Implement this function
-			const categoryIndex = categories.indexOf(category);
-            if (categoryIndex !== undefined) {
-                categoryTargetVector[categoryIndex] = 1; // One-hot encoding
-            }
-        });
-        categoryTargets.push(categoryTargetVector);
-    });
+		// OUTPUT - Create a corresponding target output for recipes (one-hot encoding)
+		const recipeTargetVector = new Array(recipes.length).fill(0);
+		recipeTargetVector[recipeIndex] = 1;
+		recipeTargets.push(recipeTargetVector);
 
-    return { ingredientVectors, recipeTargets, categoryTargets };
+		// INPUT - categoryVectors
+		categories.forEach((categoryName, index) => {
+			if (recipeCategoryStr.indexOf(categoryName.toLowerCase()) >= 0) {
+				categoryArray[index] = 1;
+			}
+		});
+		categoryVectors.push(categoryArray);
+
+		// Create a corresponding target output for categories
+		const categoryTargetVector = new Array(categories.length).fill(0);
+		// Assuming categories are defined in your recipe, populate them appropriately
+		// For instance, if the recipe has categories in an array `recipe.categories`:
+		recipe.categories.forEach((category: JSONObject) => {
+			const categoryIndex = categories.indexOf(category.name);
+			if (categoryIndex !== undefined) {
+				categoryTargetVector[categoryIndex] = 1; // One-hot encoding
+			}
+		});
+		categoryTargets.push(categoryTargetVector);
+	});
+
+	return {
+		ingredientVectors,
+		categoryVectors,
+		recipeTargets,
+		categoryTargets,
+	};
 };
