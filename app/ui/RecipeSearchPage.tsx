@@ -141,15 +141,15 @@ export default function RecipeSearchPage() {
             .slice(0, 10) // Get top 10
         const topRecipes = topRecipeIndices.map(item => recipes![item.index]); // Assuming 'recipes' is your array of recipe names
 
-        // Find the index of the highest probability for categories
-        const topCategoryIndices = Array.from(categoryPredictions)
-            .map((pred, index) => ({ index, pred }))
-            .sort((a, b) => b.pred - a.pred) // Sort in descending order
-            .slice(0, 12) // Get first one
-        const topCategories = topCategoryIndices.map(item => categories![item.index]); // Assuming 'recipes' is your array of recipe names
+    //     // Find the index of the highest probability for categories
+    //     const topCategoryIndices = Array.from(categoryPredictions)
+    //         .map((pred, index) => ({ index, pred }))
+    //         .sort((a, b) => b.pred - a.pred) // Sort in descending order
+    //         .slice(0, 12) // Get first one
+    //     const topCategories = topCategoryIndices.map(item => categories![item.index]); // Assuming 'recipes' is your array of recipe names
 
-    console.log(topRecipes);
-    console.log(topCategories);
+    // console.log(topRecipes);
+    // console.log(topCategories);
 
         const categoryPredictionsArray = Array.from(categoryPredictions); // Convert to a regular array
         const predictedCategoryIndex = categoryPredictions.indexOf(Math.max(...categoryPredictionsArray));
