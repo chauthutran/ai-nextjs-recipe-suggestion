@@ -114,12 +114,9 @@ export default function RecipeSearchPage() {
         }
         
         const categoryNames = categories!.map(item => item.name);
-        console.log(categoryNames.join(", "));
-        console.log(ingredients!.join(", "));
         const featureArray = convertIngredientsToFeatures(inputText, ingredients!, categoryNames!);
 
         // Create tensors
-        console.log(featureArray);
         const ingredientTensor = tf.tensor2d([featureArray.ingredientVector], [1, featureArray.ingredientVector.length]);
         const categoryTensor = tf.tensor2d([featureArray.categoryVector], [1, featureArray.categoryVector.length]);
 
@@ -144,13 +141,15 @@ export default function RecipeSearchPage() {
             .slice(0, 10) // Get top 10
         const topRecipes = topRecipeIndices.map(item => recipes![item.index]); // Assuming 'recipes' is your array of recipe names
 
+        // Find the index of the highest probability for categories
+        const topCategoryIndices = Array.from(categoryPredictions)
+            .map((pred, index) => ({ index, pred }))
+            .sort((a, b) => b.pred - a.pred) // Sort in descending order
+            .slice(0, 12) // Get first one
+        const topCategories = topCategoryIndices.map(item => categories![item.index]); // Assuming 'recipes' is your array of recipe names
 
-    // Find the index of the highest probability for categories
-    const topCategoryIndices = Array.from(categoryPredictions)
-        .map((pred, index) => ({ index, pred }))
-        .sort((a, b) => b.pred - a.pred) // Sort in descending order
-        .slice(0, 12) // Get first one
-    const topCategories = topCategoryIndices.map(item => categories![item.index]); // Assuming 'recipes' is your array of recipe names
+    console.log(topRecipes);
+    console.log(topCategories);
 
         const categoryPredictionsArray = Array.from(categoryPredictions); // Convert to a regular array
         const predictedCategoryIndex = categoryPredictions.indexOf(Math.max(...categoryPredictionsArray));
