@@ -11,6 +11,9 @@ import { useRecipe } from '@/contexts/RecipeContext';
 import RecipeDetails from './recipeList/RecipeDetails';
 import RecipeSearch from './RecipeSearchPage';
 import RecipeForm from './recipeList/RecipeForm';
+import NumberDemo from './NumberDemo';
+import RecipesByCategoryPage from './RecipesByCategoryPage';
+import MealPlanPage from './MealPlanPage';
 
 
 export default function AppWrapper() {
@@ -22,11 +25,21 @@ export default function AppWrapper() {
             {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateCategories() }>Update Categories</button>
             <button className='bg-blue-500' onClick={() => dbService.getRecipesWithoutCategories() }>Recipes without Categories</button> */}
 {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.importIngredients() }>Import Ingredients</button> */}
+{/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateMealTypes() }>Update MealTypes</button> */}
+<button className='bg-blue-500 mr-10' onClick={() => dbService.updateDietaryRestrictions() }>Update updateDietaryRestrictions</button>
+
+
+
+			<MealPlanPage />
+			{/* <RecipeSearch /> */}
 
 			{/* <RecipeForm /> */}
 
-			<RecipeSearch />
+			
+			{/* <RecipesByCategoryPage /> */}
 
+			{/* <NumberDemo /> */}
+			
 			
 		</div>
 	);

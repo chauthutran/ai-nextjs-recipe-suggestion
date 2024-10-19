@@ -13,6 +13,15 @@ const RecipeSchema = new mongoose.Schema({
         ref: "Category",
         required: true,
     }],
+    mealTypes: {
+        type: [String], // Changed to an array to allow multiple meal types
+        enum: [], // Example meal types
+        required: true
+    },
+    dietaryRestrictions: {
+        type: [String], // Array for multiple dietary restrictions
+        enum: ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'], // Example restrictions
+    },
     createdAt: {type: Date, default: new Date()}
 },
 {

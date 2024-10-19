@@ -22,17 +22,25 @@ cloudinary.v2.config({
     api_secret: "bKE0gc2JcdvW1MTw9ndUzXPbIjw",
 });
 
-export async function fetchRecipes() {
+export async function fetchRecipes(categoryIds?: string[]): Promise<JSONObject> {
 	try {
 		await connectToDatabase();
 
-		const recipes = await Recipe.find().populate("categories");
+		let recipes;
+		if( categoryIds ) {
+			const categorIdObjects = categoryIds.map((categoryId: string) => new mongoose.Types.ObjectId(categoryId));
+			recipes = await Recipe.find({ categories: { $in: categorIdObjects } }).populate("categories");
+		}
+		else {
+			recipes = await Recipe.find().populate("categories");
+		}
 
 		return { status: "success", data: Utils.cloneJSONObject(recipes) };
 	} catch (error) {
-		return { status: "error", data: Utils.getResponseErrMessage(error) };
+		return { status: "error", message: Utils.getResponseErrMessage(error) };
 	}
 }
+
 
 export async function createRecipe(payload: JSONObject) {
     try {
@@ -65,6 +73,350 @@ export async function createRecipe(payload: JSONObject) {
     }
 }
 
+
+// Change/update structure model
+
+export async function updateMealTypes() {
+    try {
+        await connectToDatabase();
+
+		const maplist: JSONObject[] = [
+			{ "recipeName": "Beef Stir Fry", "mealTypes": ["lunch", "dinner"] },
+		]
+		  
+		  
+		
+		for( let i=0; i<maplist.length; i++ ) {
+				const mapData = maplist[i];
+				const recipe = await Recipe.findOne({ name: mapData.recipeName.trim() });
+				// console.log(recipe);
+				if(recipe !== null ) {
+					recipe.mealTypes = mapData.mealTypes;
+					// const saved = await Recipe.updateOne({ _id: recipe._id }, { mealTypes: mapData.mealTypes });
+
+					// console.log(mapData.mealTypes);
+					// console.log(recipe);
+					const result = await Recipe.updateOne({_id: recipe._id}, recipe, {new: true});
+
+				console.log(result);	
+				}
+			}
+		console.log("Uploaded mealTypes");
+	} catch (error: any) {
+        console.log("Uploaded ERROR",  error.message);
+    }
+}
+
+
+export async function updateDietaryRestrictions() {
+    try {
+        await connectToDatabase();
+
+		const maplist: JSONObject[] = [
+			{
+			  "name": "Chicken and Dumplings",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Roasted Vegetable Medley",
+			  "dietaryRestrictions": ["Vegetarian", "Vegan", "Gluten-Free", "Nut-Free", "Dairy-Free"]
+			},
+			{
+			  "name": "Grilled Chicken Salad",
+			  "dietaryRestrictions": ["Gluten-Free"]
+			},
+			{
+			  "name": "Cauliflower Buffalo Bites",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Peanut Butter Cookies",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free"]
+			},
+			{
+			  "name": "Clam Chowder",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Pasta Salad",
+			  "dietaryRestrictions": ["Vegetarian"]
+			},
+			{
+			  "name": "Quiche Lorraine",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Asian Noodle Salad",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Tofu Stir Fry",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Baked Potatoes",
+			  "dietaryRestrictions": ["Vegetarian", "Vegan", "Gluten-Free", "Nut-Free", "Dairy-Free"]
+			},
+			{
+			  "name": "Coconut Rice",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free", "Dairy-Free"]
+			},
+			{
+			  "name": "Stuffed Mushrooms",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Fettuccine Alfredo",
+			  "dietaryRestrictions": ["Vegetarian"]
+			},
+			{
+			  "name": "Egg Fried Rice",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Spinach and Cheese Omelette",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Avocado Toast",
+			  "dietaryRestrictions": ["Vegetarian", "Vegan", "Nut-Free"]
+			},
+			{
+			  "name": "Peanut Butter Oatmeal",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free"]
+			},
+			{
+			  "name": "Garlic Butter Shrimp",
+			  "dietaryRestrictions": ["Gluten-Free"]
+			},
+			{
+			  "name": "Lentil and Spinach Soup",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Pancakes",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Mushroom Soup",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Spaghetti Bolognese",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Spinach and Feta Quesadillas",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Chicken Stir-Fry",
+			  "dietaryRestrictions": ["Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Cheesy Mashed Potatoes",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Shrimp Scampi",
+			  "dietaryRestrictions": ["Gluten-Free"]
+			},
+			{
+			  "name": "Zucchini Fritters",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Chicken Noodle Soup",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Pasta Carbonara",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Sweet Potato Fries",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free", "Dairy-Free"]
+			},
+			{
+			  "name": "Garlic Bread",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Omelette",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Dak Gomtang (Korean Chicken Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Kimchi Jjigae (Kimchi Stew with Pork or Tofu)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Galbitang (Beef Short Rib Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Sundubu Jjigae (Soft Tofu Stew)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Miyeok Guk (Seaweed Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Doenjang Jjigae (Soybean Paste Stew)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Samgyetang (Ginseng Chicken Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Kimchi Guk (Kimchi Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Kongnamul Guk (Soybean Sprout Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Tteokguk (Rice Cake Soup)",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free"]
+			},
+			{
+			  "name": "Mandu Guk (Korean Dumpling Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Yukgaejang (Spicy Beef Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Dwaeji Gukbap (Pork Soup with Rice)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Seolleongtang (Ox Bone Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Hobakjuk (Pumpkin Porridge)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Janchi Guksu (Banquet Noodle Soup)",
+			  "dietaryRestrictions": ["Vegetarian", "Nut-Free"]
+			},
+			{
+			  "name": "Maeuntang (Spicy Fish Stew)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Sujebi (Hand-Pulled Dough Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Gyeran Guk (Egg Soup)",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Bukeoguk (Dried Pollock Soup)",
+			  "dietaryRestrictions": ["Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Yeolmu Kimchi Guk (Young Radish Kimchi Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Nureun Deulkkae Tang (Perilla Seed Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Kalguksu (Knife-Cut Noodle Soup)",
+			  "dietaryRestrictions": ["Vegetarian"]
+			},
+			{
+			  "name": "Jjampong (Spicy Seafood Noodle Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Oritang (Duck Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Hwangtae Guk (Dried Pollock Soup)",
+			  "dietaryRestrictions": ["Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Chueotang (Loach Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Gochujang Jjigae (Spicy Red Pepper Stew)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Bulgogi Jeongol (Bulgogi Hot Pot)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Gamjatang (Pork Bone Soup)",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Miyeokguk (Seaweed Soup)",
+			  "dietaryRestrictions": ["Vegan", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Korean Spicy Chicken Salad",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Bibim Noodles",
+			  "dietaryRestrictions": ["Vegan", "Nut-Free"]
+			},
+			{
+			  "name": "Kimchi Pancake",
+			  "dietaryRestrictions": ["Vegan", "Nut-Free"]
+			},
+			{
+			  "name": "Kimchi Fried Rice",
+			  "dietaryRestrictions": ["Vegetarian", "Gluten-Free", "Nut-Free"]
+			},
+			{
+			  "name": "Tuna Kimbap",
+			  "dietaryRestrictions": []
+			},
+			{
+			  "name": "Vegetable Kimbap",
+			  "dietaryRestrictions": ["Vegan", "Nut-Free"]
+			}
+		  ]
+		  
+		  
+		
+		for( let i=0; i<maplist.length; i++ ) {
+				const mapData = maplist[i];
+				const recipe = await Recipe.findOne({ name: mapData.name.trim() });
+				// console.log(recipe);
+				if(recipe !== null ) {
+					recipe.dietaryRestrictions = mapData.dietaryRestrictions;
+					// const saved = await Recipe.updateOne({ _id: recipe._id }, { mealTypes: mapData.mealTypes });
+
+					// console.log(mapData.mealTypes);
+					// console.log(recipe);
+					const result = await Recipe.updateOne({_id: recipe._id}, recipe, {new: true});
+
+				// console.log(result);	
+				}
+			}
+		console.log("Uploaded mealTypes");
+	} catch (error: any) {
+        console.log("Uploaded ERROR",  error.message);
+    }
+}
 
 export async function updateImages() {
     try {

@@ -56,6 +56,7 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
 		else {
 			const _recipes = response.data;
 			const _recipeData = _recipes.map((item: JSONObject) => item.name );
+
 			setRecipes( _recipes );
 			setRecipeData(_recipeData);
 			setProcessStatus(Constant.RESPONSE_RECIPE_SUCCESS);

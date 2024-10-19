@@ -14,4 +14,4 @@ export async function fetchCategories() {
     } catch (error) {
         return { status: "error", data: Utils.getResponseErrMessage(error)};
     }
-  }
+}

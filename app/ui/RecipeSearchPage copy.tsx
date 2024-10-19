@@ -14,41 +14,68 @@ import Image from 'next/image';
 import ReceipeList from './recipeList/RecipeList';
 import { useCategory } from '@/contexts/CategoryContext';
 import * as Utils from "@/lib/utils";
-import * as Constant from "@/lib/constant";
+import { useApp } from '@/contexts/AppContext';
 
 
 export default function RecipeSearchPage() {
 
-    const { categories } = useCategory();
-    const { ingredients } = useIngredient();
-    const { recipeData, recipes } = useRecipe();
+    const { categories, ingredients, recipes, model } = useApp();
 
-    // const [model, setModel] = useState<tf.Sequential | null>(null);
-    const [model, setModel] = useState<tf.LayersModel | null>(null);
     const [predictedRecipes, setPredictedRecipes] = useState<JSONObject[] | null>(null);
     const [inputText, setInputText] = useState('');
-
-    useEffect(() => {
-        if( categories !== null && ingredients !== null && recipeData!== null && recipes !== null ) {
-            loadModel();
-        }
-    }, [ingredients, recipeData, recipes])
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputText(event.target.value);
     };
 
-    const loadModel = async () => {
-        console.log("Model is loading");
-        const _model = createRecipeModel(ingredients!.length, recipes!.length, categories!.length, Constant.MEAL_TYPES.length, Constant.DIETARY_RESTRICTIONS.length);
+    const parseIngredients = (text: string) => {
+        // Basic keyword-based parsing (expand this list as needed)
 
-        const categoryNames = categories?.map(item => item.name);
-        // Train the model
-        await trainRecipeModel(_model, recipes!, ingredients!, categoryNames!, Constant.MEAL_TYPES, Constant.DIETARY_RESTRICTIONS);
-        console.log("Model is loaded");
+        // Initialize an array of 10 ingredients (all 0 by default)
+        const ingredientArray = Array(ingredients!.length).fill(0);
 
-        setModel(_model); // Store the trained model
+        // Check if the text contains any known ingredient and mark it as "1" in the array
+        ingredients!.forEach((ingredient: string, index: number) => {
+            if (text.toLowerCase().includes(ingredient.toLowerCase())) {
+                ingredientArray[index] = 1;
+            }
+        });
+
+        return ingredientArray;
     };
+
+    function convertIngredientsToFeatures(
+        inputText: string,
+        ingredientsList: string[],
+        categoriesList: string[]
+    ): JSONObject {
+        // Step 1: Normalize text to lowercase
+        const normalizedText = inputText.toLowerCase();
+        
+        // Step 2: Create ingredient and category index maps
+        const ingredientIndex: { [key: string]: number } = {};
+        ingredientsList.forEach((ingredient, index) => {
+            ingredientIndex[ingredient] = index;
+        });
+    
+        const categoryIndex: { [key: string]: number } = {};
+        categoriesList.forEach((category, index) => {
+            categoryIndex[category] = index;
+        });
+    
+        // Step 3: Generate one-hot vector for ingredients
+        const ingredientVector = ingredients!.map(ingredient => 
+            normalizedText.includes(ingredient.toLowerCase()) ? 1 : 0
+        );
+    
+        // Step 4: Generate one-hot vector for categories
+        const categoryVector = categoriesList!.map(categoryName => 
+            normalizedText.includes(categoryName.toLowerCase()) ? 1 : 0
+        );
+    
+        // Step 5: Return ingredient and category vectors
+        return {ingredientVector, categoryVector};
+    }
 
     const predictRecipe = async () => {
         if (!model) {
@@ -57,7 +84,7 @@ export default function RecipeSearchPage() {
         }
 
         // Parse the input text to get ingredient array
-        const ingredientArray = Utils.parseIngredients(ingredients!, inputText);
+        const ingredientArray = parseIngredients(inputText);
 
         // Ensure that the input has exactly 10 ingredients
         if (ingredientArray.length !== ingredients!.length) {
@@ -65,7 +92,7 @@ export default function RecipeSearchPage() {
         }
         
         const categoryNames = categories!.map(item => item.name);
-        const featureArray = Utils.convertIngredientsToFeatures(inputText, ingredients!, categoryNames, Constant.MEAL_TYPES, Constant.DIETARY_RESTRICTIONS);
+        const featureArray = convertIngredientsToFeatures(inputText, ingredients!, categoryNames!);
 
         // Create tensors
         const ingredientTensor = tf.tensor2d([featureArray.ingredientVector], [1, featureArray.ingredientVector.length]);
@@ -76,7 +103,12 @@ export default function RecipeSearchPage() {
         // Get the recipe output tensor
         const recipeOutput = predictions[0]; // Recipe predictions
         const categoryOutput = predictions[1]; // Category predictions
+        // // Convert the recipe output tensor to an array
+        // const recipeProbabilities = await recipeOutput.array() as number[][];
+        // // Convert the category output tensor to an array
+        // const categoryProbabilities = await categoryOutput.array() as number[][];
 
+            
         // Convert predictions to array
         const recipePredictions = await recipeOutput.data();
         const categoryPredictions = await categoryOutput.data();
@@ -87,6 +119,16 @@ export default function RecipeSearchPage() {
             .slice(0, 10) // Get top 10
         const topRecipes = topRecipeIndices.map(item => recipes![item.index]); // Assuming 'recipes' is your array of recipe names
 
+    //     // Find the index of the highest probability for categories
+    //     const topCategoryIndices = Array.from(categoryPredictions)
+    //         .map((pred, index) => ({ index, pred }))
+    //         .sort((a, b) => b.pred - a.pred) // Sort in descending order
+    //         .slice(0, 12) // Get first one
+    //     const topCategories = topCategoryIndices.map(item => categories![item.index]); // Assuming 'recipes' is your array of recipe names
+
+    // console.log(topRecipes);
+    // console.log(topCategories);
+
         const categoryPredictionsArray = Array.from(categoryPredictions); // Convert to a regular array
         const predictedCategoryIndex = categoryPredictions.indexOf(Math.max(...categoryPredictionsArray));
         const predictedCategory = categories![predictedCategoryIndex];
@@ -95,11 +137,19 @@ export default function RecipeSearchPage() {
         return Utils.findItemFromList( recipe.categories, predictedCategory.name, "name"); // Adjust this condition based on your data structure
     });
 
+        // // Assuming the model output is an array of probabilities for each recipe
+        // // Get the top 3 predictions
+        // const topIndices = predictedRecipe[0]
+        //     .map((prob, index) => ({ index, prob }))
+        //     .sort((a, b) => b.prob - a.prob)
+        //     .slice(0, 10)
+        //     .map(item => item.index);
+
         setPredictedRecipes( filteredRecipes );
     };
 
 
-    if ( categories === null || ingredients === null || recipeData === null || model === null ) return (
+    if ( categories === null || ingredients === null || recipes === null || model === null ) return (
         <div className="flex space-x-5">
             <div className="italic">Loading data and model</div>
             <SpinningIcon className="text-gray-400" />
