@@ -60,7 +60,7 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 	);
 	const predictedMealTypes: string[] = getTopPredictions(
 		Array.from(mealTypePredictions),
-		1,
+		3,
 		Constant.MEAL_TYPES
 	);
 	const preditedDietaryRestrictions = getTopPredictions(
@@ -71,7 +71,7 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 
     const filterRecipes = predictedRecipes.filter((recipe: JSONObject) => 
         recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
-        && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
+        // && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
         && recipe.dietaryRestrictions.filter((item: string) => preditedDietaryRestrictions.includes(item)).length > 0
     );
 
@@ -82,21 +82,12 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 export const preditMealPlan = async(inputPreferences: JSONObject, ingredients: string[],categories: JSONObject[], recipes: JSONObject[], model: tf.LayersModel): Promise<JSONObject[]> => {
     
 	const categoryNames = categories!.map((item) => item.name);
-    
+
 	 // Create tensors
      const ingredientArray = new Array(ingredients!.length).fill(0);
      const categoryArray = new Array(categories!.length).fill(0);
      const mealTypeArray = convertMealTypeToFeatures(inputPreferences.mealType, Constant.MEAL_TYPES);
      const dietaryRestrictionArray = convertMealTypeToFeatures(inputPreferences.mealType, Constant.DIETARY_RESTRICTIONS);
-
-    //  const ingredientTensor = tf.tensor2d([ingredientArray], [1, ingredients!.length]);
-    //  const categoryTensor = tf.tensor2d([categoryArray], [1, categories!.length]);
-    //  const mealTypeTensor = tf.tensor2d([mealTypeArray], [1, Constant.MEAL_TYPES.length]);
-    //  const dietaryRestrictionTensor = tf.tensor2d([dietaryRestrictionArray], [1, Constant.DIETARY_RESTRICTIONS.length]);
-
-    //  // Make the prediction
-    //  const predictions = model!.predict([ingredientTensor, categoryTensor, mealTypeTensor, dietaryRestrictionTensor]) as tf.Tensor;
-
 
 	// Create tensors
 	const ingredientTensor = tf.tensor2d(
@@ -155,7 +146,10 @@ export const preditMealPlan = async(inputPreferences: JSONObject, ingredients: s
 		1,
 		Constant.DIETARY_RESTRICTIONS
 	);
-
+console.log("==== predictedRecipes:", predictedRecipes);
+console.log("predictedCategories:", predictedCategories);
+console.log("predictedMealTypes:", predictedMealTypes);
+console.log("preditedDietaryRestrictions:", preditedDietaryRestrictions);
     const filterRecipes = predictedRecipes.filter((recipe: JSONObject) => 
         recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
         && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
