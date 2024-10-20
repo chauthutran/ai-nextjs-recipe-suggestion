@@ -1,5 +1,4 @@
 import * as tf from "@tensorflow/tfjs";
-import * as Constant from "@/lib/constant";
 import { JSONObject } from "../definations";
 
 /**
@@ -32,8 +31,11 @@ export const createRecipeModel = (
 		name: "categoryInput",
 	});
 	let y = tf.layers
-		.dense({ units: 32, activation: "relu" })
+		.dense({ units: 128, activation: "relu" })
 		.apply(categoryInput) as tf.SymbolicTensor;
+	y = tf.layers
+		.dense({ units: 64, activation: "relu" })
+		.apply(y) as tf.SymbolicTensor;
 
 	// Input for meal types
 	const mealTypeInput = tf.input({
@@ -41,17 +43,32 @@ export const createRecipeModel = (
 		name: "mealTypeInput",
 	});
 	let z = tf.layers
+		.dense({ units: 64, activation: "relu" })
+		.apply(mealTypeInput);
+	z = tf.layers
 		.dense({ units: 32, activation: "relu" })
-		.apply(mealTypeInput) as tf.SymbolicTensor;
+		.apply(z) as tf.SymbolicTensor;
+
+	// let z = tf.layers
+	// 	.dense({ units: 32, activation: "relu" })
+	// 	.apply(mealTypeInput) as tf.SymbolicTensor;
 
 	// Input for dietary restrictions
-	const dietaryRestrictionsInput = tf.input({
+	const dietaryRestrictionInput = tf.input({
 		shape: [dietaryRestrictionsNo],
 		name: "dietaryRestrictionsInput",
 	});
+
 	let w = tf.layers
+		.dense({ units: 64, activation: "relu" })
+		.apply(dietaryRestrictionInput);
+	w = tf.layers
 		.dense({ units: 32, activation: "relu" })
-		.apply(dietaryRestrictionsInput) as tf.SymbolicTensor;
+		.apply(w) as tf.SymbolicTensor;
+		
+	// let w = tf.layers
+	// 	.dense({ units: 32, activation: "relu" })
+	// 	.apply(dietaryRestrictionsInput) as tf.SymbolicTensor;
 
 	// Concatenate the paths for ingredients, categories, meal types, and dietary restrictions
 	const combined = tf.layers.concatenate().apply([x, y, z, w]);
@@ -73,18 +90,19 @@ export const createRecipeModel = (
 		
 	// Output layer for categories
 	const mealTypeOutput = tf.layers
-		.dense({ units: categoryNo, activation: "softmax", name: "mealTypeOutput" })
+		.dense({ units: mealTypeNo, activation: "softmax", name: "mealTypeOutput" })
 		.apply(combined) as tf.SymbolicTensor;
 
 	
 	// Output layer for categories
 	const dietaryRestrictionOutput = tf.layers
-		.dense({ units: categoryNo, activation: "softmax", name: "dietaryRestrictionOutput" })
+		.dense({ units: dietaryRestrictionsNo, activation: "softmax", name: "dietaryRestrictionOutput" })
 		.apply(combined) as tf.SymbolicTensor;
 
 	// Create the model with four inputs and two outputs
 	const model = tf.model({
-		inputs: [ingredientInput, categoryInput, mealTypeInput, dietaryRestrictionsInput ],
+		inputs: [ingredientInput, categoryInput, mealTypeInput, dietaryRestrictionInput ],
+		// outputs: recipeOutput
 		outputs: [recipeOutput, categoryOutput, mealTypeOutput, dietaryRestrictionOutput],
 	});
 
@@ -102,7 +120,7 @@ export const createRecipeModel = (
 			categoryOutput: "accuracy",
 			mealTypeOutput: "accuracy",
 			dietaryRestrictionOutput: "accuracy",
-		},
+		}
 	});
 
 	return model;
@@ -136,7 +154,7 @@ export async function trainRecipeModel(
 	const categoryTensor = tf.tensor2d(categoryVectors, [
 		categoryVectors.length,
 		categories.length,
-	]); // Shape [batchSize, 12]
+	]); // Shape [batchSize, 11]
 	const mealTypeTensor = tf.tensor2d(mealTypeVectors, [
 		mealTypeVectors.length,
 		mealTypes.length,
@@ -144,24 +162,23 @@ export async function trainRecipeModel(
 	const dietaryRestrictionTensor = tf.tensor2d(dietaryRestrictionVectors, [
 		dietaryRestrictionVectors.length,
 		dietaryRestrictions.length,
-	]); // Shape [batchSize, 4]
-
+	]); // Shape [batchSize, 5]
 
 
 	const ys = {
-		recipeTargets: tf.tensor2d(recipeTargets, [
+		recipeOutput: tf.tensor2d(recipeTargets, [
 			recipeTargets.length,
 			recipes.length,
 		]), // Targets for recipes
-		categoryTargets: tf.tensor2d(categoryTargets, [
+		categoryOutput: tf.tensor2d(categoryTargets, [
 			categoryTargets.length,
 			categories.length,
 		]), // Targets for categories
-		mealTypeTargets: tf.tensor2d(mealTypeTargets, [
+		mealTypeOutput: tf.tensor2d(mealTypeTargets, [
 			mealTypeTargets.length,
 			mealTypes.length,
 		]),
-		dietaryRestrictionTargets: tf.tensor2d(dietaryRestrictionTargets, [
+		dietaryRestrictionOutput: tf.tensor2d(dietaryRestrictionTargets, [
 			dietaryRestrictionTargets.length,
 			dietaryRestrictions.length,
 		]),
@@ -170,12 +187,7 @@ export async function trainRecipeModel(
 	// Train the model
 	await model.fit(
 		[ingredientTensor, categoryTensor, mealTypeTensor, dietaryRestrictionTensor],
-		{
-			recipeOutput: ys.recipeTargets, // Assuming ys is structured correctly
-			categoryOutput: ys.categoryTargets,
-			mealTypeOutput: ys.mealTypeTargets,
-			dietaryRestrictionOutput: ys.dietaryRestrictionTargets
-		},
+		ys,
 		{
 			epochs: 1000, // Total epochs, but training may stop earlier
 			batchSize: 32, // Number of samples per gradient update
@@ -189,6 +201,29 @@ export async function trainRecipeModel(
 			// },
 		}
 	);
+	
+	// // Train the model
+	// await model.fit(
+	// 	[ingredientTensor, categoryTensor, mealTypeTensor, dietaryRestrictionTensor],
+	// 	{
+	// 		recipeOutput: ys.recipeTargets, // Assuming ys is structured correctly
+	// 		categoryOutput: ys.categoryTargets,
+	// 		mealTypeOutput: ys.mealTypeTargets,
+	// 		dietaryRestrictionOutput: ys.dietaryRestrictionTargets
+	// 	},
+	// 	{
+	// 		epochs: 1000, // Total epochs, but training may stop earlier
+	// 		batchSize: 32, // Number of samples per gradient update
+	// 		shuffle: true, // Shuffle training data before each epoch
+	// 		validationSplit: 0.2, // Use 20% of the data for validation
+	// 		callbacks: [earlyStopping], // Apply early stopping
+	// 		// callbacks: {
+	// 		// 	onEpochEnd: (epoch, logs: any) => {
+	// 		// 		console.log(`Epoch ${epoch}: loss = ${logs.loss}`);
+	// 		// 	},
+	// 		// },
+	// 	}
+	// );
 }
 
 const earlyStopping = tf.callbacks.earlyStopping({

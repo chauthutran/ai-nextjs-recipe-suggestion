@@ -10,12 +10,13 @@ import { createRecipeModel, trainRecipeModel } from '@/lib/tensorflow/model';
 
 
 interface AppContextProps {
+	appPage: string;
+	setAppPage: (pageName: string) => void;
+
 	ingredients: string[] | null;
 	categories: JSONObject[] | null;
 	recipes: JSONObject[] | null;
 	model: tf.LayersModel | null;
-
-	// fetchApps: () => void;
 
 	processStatus: string;
 	error: string | null;
@@ -26,8 +27,9 @@ const AppContext = createContext<AppContextProps>({
 	categories: null,
 	recipes: null,
 	model: null,
-
-	// fetchApps: async () => { },
+	
+	appPage: Constant.PAGE_HOME,
+	setAppPage: (pageName: String) => {},
 
 	processStatus: "",
 	error: null
@@ -43,6 +45,8 @@ export const useApp = (): AppContextProps => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+	const [appPage, setAppPage] = useState<string>(Constant.PAGE_HOME);
+
 	const [model, setModel] = useState<tf.LayersModel | null>(null);
     const [ingredients, setIngredients] = useState<string[] | null>(null);
 	const [categories, setCategorys] = useState<JSONObject[] | null>(null);
@@ -136,7 +140,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
 
 	return (
-		<AppContext.Provider value={{  processStatus, error: error, ingredients, categories, recipes, model }}>
+		<AppContext.Provider value={{appPage, setAppPage, processStatus, error: error, ingredients, categories, recipes, model }}>
 			{children}
 		</AppContext.Provider>
 	);

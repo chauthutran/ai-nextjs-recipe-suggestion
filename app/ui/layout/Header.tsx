@@ -1,14 +1,17 @@
 "use client";
 
+import { useApp } from "@/contexts/AppContext";
 import Image from "next/image";
 import { GiNoodles } from "react-icons/gi";
+import * as Constant from "@/lib/constant";
+
 
 export default function Header() {
 
+    const { appPage, setAppPage } = useApp();
+
     return (
         <header className="font-montserrat px-10 flex items-center space-x-10 py-3 text-black">
-
-
             {/* <div className="flex-1 flex  items-center"> */}
             <div className="flex flex-col items-center justify-center text-leaf-green font-extrabold">
                 <div className="text-2xl">
@@ -23,16 +26,16 @@ export default function Header() {
                 <div>AI Recipes</div>
             </div>
 
-            <button>Home</button>
-            <button>Meal Planner</button>
+            <button className={`${appPage ===Constant.PAGE_HOME} && border_b border-leaf-green`} onClick={() => setAppPage(Constant.PAGE_HOME)}>Home</button>
+            <button className={`${appPage ===Constant.PAGE_MEAL_PLAN} && border_b border-leaf-green`} onClick={() => setAppPage(Constant.PAGE_MEAL_PLAN)}>Meal Planner</button>
             <button>Favorites</button>
-            <button>Categories</button>
+            <button className={`${appPage ===Constant.PAGE_RECIPES_BY_CATEGORY} && border_b border-leaf-green`} onClick={() => setAppPage(Constant.PAGE_RECIPES_BY_CATEGORY)}>Categories</button>
             <button>Dietary Preferences</button>
             <button>Recipe Upload</button>
             <button>Profile</button>
             <button>Notifications</button>
             <button>About</button>
-            <button className="bg-leaf-green px-3 py-1 text-white rounded-lg">Search</button>
+            <button className="bg-leaf-green px-3 py-1 text-white rounded-lg" onClick={() => setAppPage(Constant.PAGE_INGREDIENT_BASED_RECIPE_SUGGESTIONS)}>Search</button>
             {/* <div>Ingredient-Based Recipe Suggestions</div>
                 <div>Cuisine and Dietary Preferences</div>
                 <div>Meal Planner</div>

@@ -29,7 +29,7 @@ export default function RecipeSearchPage() {
     const [inputText, setInputText] = useState('');
 
     useEffect(() => {
-        if( categories !== null && ingredients !== null && recipeData!== null && recipes !== null ) {
+        if (categories !== null && ingredients !== null && recipeData !== null && recipes !== null) {
             loadModel();
         }
     }, [ingredients, recipeData, recipes])
@@ -56,50 +56,75 @@ export default function RecipeSearchPage() {
             return;
         }
 
-        // Parse the input text to get ingredient array
-        const ingredientArray = Utils.parseIngredients(ingredients!, inputText);
+        // const categoryNames = categories!.map(item => item.name);
 
-        // Ensure that the input has exactly 10 ingredients
-        if (ingredientArray.length !== ingredients!.length) {
-            alert(`The input must contain exactly ${ingredients!.length} values.`);
-        }
+        // const ingredientArray = Utils.convertIngredientToFeatures(inputText, ingredients!);
+        // const categoryArray = Utils.convertCategoryToFeatures(inputText, categoryNames);
+        // const mealTypeArray = Utils.convertMealTypeToFeatures(inputText, Constant.MEAL_TYPES);
+        // const dietaryRestrictionArray = Utils.convertDietaryRestrictionToFeatures(inputText, Constant.DIETARY_RESTRICTIONS);
+
+        // // Create tensors
+        // const ingredientTensor = tf.tensor2d([ingredientArray], [1, ingredients!.length]);
+        // const categoryTensor = tf.tensor2d([categoryArray], [1, categories!.length]);
+        // const mealTypeTensor = tf.tensor2d([mealTypeArray], [1, Constant.MEAL_TYPES.length]);
+        // const dietaryRestrictionTensor = tf.tensor2d([dietaryRestrictionArray], [1, Constant.DIETARY_RESTRICTIONS.length]);
+
+        // // Perform the prediction
+        // const predictions = model.predict([ingredientTensor, categoryTensor, mealTypeTensor, dietaryRestrictionTensor]) as tf.Tensor[];
+        // // Get the recipe output tensor
+        // const recipeOutput = predictions[0]; // Recipe predictions
+        // const categoryOutput = predictions[1]; // Category predictions
+        // const mealTypeOutput = predictions[2]; // Mealtype predictions
+        // const dietaryRestrictionOutput = predictions[3]; // dietaryRestriction predictions
         
-        const categoryNames = categories!.map(item => item.name);
-        const featureArray = Utils.convertIngredientsToFeatures(inputText, ingredients!, categoryNames, Constant.MEAL_TYPES, Constant.DIETARY_RESTRICTIONS);
+        //     // Convert predictions to array
+        //     const recipePredictions = await recipeOutput.data();
+        //     const categoryPredictions = await categoryOutput.data();
+        //     const mealTypePredictions = await mealTypeOutput.data();
+        //     const dietaryRestrictionPredictions = await dietaryRestrictionOutput.data();
 
-        // Create tensors
-        const ingredientTensor = tf.tensor2d([featureArray.ingredientVector], [1, featureArray.ingredientVector.length]);
-        const categoryTensor = tf.tensor2d([featureArray.categoryVector], [1, featureArray.categoryVector.length]);
 
-        // Perform the prediction
-        const predictions = model.predict([ingredientTensor, categoryTensor]) as tf.Tensor[];
-        // Get the recipe output tensor
-        const recipeOutput = predictions[0]; // Recipe predictions
-        const categoryOutput = predictions[1]; // Category predictions
+        //     const predictedRecipes = Utils.getTopPredictions( Array.from(recipePredictions), 10, recipes!);
+        //     const predictedCategories = Utils.getTopPredictions( Array.from(categoryPredictions), 3, categoryNames!);
+        //     const predictedMealTypes: string[] = Utils.getTopPredictions( Array.from(mealTypePredictions), 1, Constant.MEAL_TYPES);
+        //     const preditedDietaryRestrictions = Utils.getTopPredictions( Array.from(dietaryRestrictionPredictions), 1,  Constant.DIETARY_RESTRICTIONS);
 
-        // Convert predictions to array
-        const recipePredictions = await recipeOutput.data();
-        const categoryPredictions = await categoryOutput.data();
+        //     const filterRecipes = () => {
+        //         // Filter recipes based on dietary restrictions and meal type
+        //         return predictedRecipes.filter((recipe: JSONObject) => 
+        //             recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
+        //             && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
+        //             && recipe.dietaryRestrictions.filter((item: string) => preditedDietaryRestrictions.includes(item)).length > 0
 
-        const topRecipeIndices = Array.from(recipePredictions)
-            .map((pred, index) => ({ index, pred }))
-            .sort((a, b) => b.pred - a.pred) // Sort in descending order
-            .slice(0, 10) // Get top 10
-        const topRecipes = topRecipeIndices.map(item => recipes![item.index]); // Assuming 'recipes' is your array of recipe names
+        //             // recipe.mealType === mealType && recipe.dietaryRestriction.includes(dietaryRestriction)
+        //         );
+        //     };
 
-        const categoryPredictionsArray = Array.from(categoryPredictions); // Convert to a regular array
-        const predictedCategoryIndex = categoryPredictions.indexOf(Math.max(...categoryPredictionsArray));
-        const predictedCategory = categories![predictedCategoryIndex];
-        const filteredRecipes = topRecipes.filter(recipe => {
-        // Check if the recipe belongs to the predicted category
-        return Utils.findItemFromList( recipe.categories, predictedCategory.name, "name"); // Adjust this condition based on your data structure
-    });
+            const filterRecipes = await Utils.preditRecipes(inputText, ingredients!, categories!, recipes!, model!)
+            setPredictedRecipes( filterRecipes );
 
-        setPredictedRecipes( filteredRecipes );
+            // const topRecipeIndices = Array.from(recipePredictions)
+            //     .map((pred, index) => ({ index, pred }))
+            //     .sort((a, b) => b.pred - a.pred) // Sort in descending order
+            //     .slice(0, 10) // Get top 10
+            // const topRecipes = topRecipeIndices.map(item => recipes![item.index]); // Assuming 'recipes' is your array of recipe names
+
+            // const categoryPredictionsArray = Array.from(categoryPredictions); // Convert to a regular array
+            // const predictedCategoryIndex = categoryPredictions.indexOf(Math.max(...categoryPredictionsArray));
+            // const predictedCategory = categories![predictedCategoryIndex];
+
+            // const filteredRecipes = topRecipes.filter(recipe => {
+            // Check if the recipe belongs to the predicted category
+        //     return Utils.findItemFromList( recipe.categories, predictedCategory.name, "name"); // Adjust this condition based on your data structure
+        // });
+        // const top10Indexes = await Utils.getTopPredictionIndexes(predictions, 10);
+        // const top10Recipes = recipes!.filter((recipe, idx) => top10Indexes.indexOf(idx) >= 0);
+
+        // setPredictedRecipes(top10Recipes);
     };
 
 
-    if ( categories === null || ingredients === null || recipeData === null || model === null ) return (
+    if (categories === null || ingredients === null || recipeData === null || model === null) return (
         <div className="flex space-x-5">
             <div className="italic">Loading data and model</div>
             <SpinningIcon className="text-gray-400" />
@@ -141,7 +166,7 @@ export default function RecipeSearchPage() {
 
             {predictedRecipes !== null && (
                 <div>
-                     <h2 className="text-xl mb-3 mt-10">Suggested Recipe</h2>
+                    <h2 className="text-xl mb-3 mt-10">Suggested Recipe</h2>
                     {/* {predictedRecipes.map((recipe: JSONObject) => (
                         <RecipeDetails key={`predit_${recipe._id}`} data={recipe} />
                     ))} */}
