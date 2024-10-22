@@ -12,9 +12,11 @@ export default function RecipesByCategoryPage() {
     const { categories } = useCategory();
     const [selectedCategory, setSelectedCategory] = useState<JSONObject>({});
     const [recipes, setRecipes] = useState<JSONObject[]>([]);
+    const [loading, setLoading] = useState(false);
     const [errMsg, setErrMsg] = useState("");
 
     const fetchRecipes = async( filterCategories: JSONObject[] ) => {
+        setLoading(true);
         const filterCategoryIds = filterCategories.map(item => item._id);
         const response = await dbService.fetchRecipes(filterCategoryIds);
         if( response.status == "success" ) {
@@ -24,6 +26,7 @@ export default function RecipesByCategoryPage() {
         else {
             setErrMsg( response.message );
         }
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -43,9 +46,13 @@ export default function RecipesByCategoryPage() {
                 <CategoriesNavigation handleItemOnClick={(category) => fetchRecipes([category])} />
             </div>
 
-            {recipes.length > 0 && <>
-                <h2 className="text-2xl font-semibold border-b border-leaf-green w-fit pr-3 mt-10 mb-5">Recipes of {selectedCategory.name}</h2>
-                <ReceipeList data={recipes} />
+            {selectedCategory.name !== "" && <>
+                <h2 className="text-2xl font-semibold border-b border-leaf-green w-fit pr-3 mt-10 mb-5 flex space-x-3 pb-2">
+                    {selectedCategory.icon && <div dangerouslySetInnerHTML={{ __html: selectedCategory.icon.replace('<svg', '<svg width="32" height="32"'), }} />}
+                    <div>Recipes of {selectedCategory.name}</div>
+                </h2>
+                {loading ? <div>Loading ...</div> : <ReceipeList data={recipes} />}
+                
             </>}
         </div>
     )
