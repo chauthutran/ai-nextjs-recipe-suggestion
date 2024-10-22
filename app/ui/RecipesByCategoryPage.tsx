@@ -39,7 +39,9 @@ export default function RecipesByCategoryPage() {
         <div className="mx-5 mb-8">
             <h2 className="text-2xl font-semibold border-b border-leaf-green w-fit pr-3 mb-5">Categories Navivation</h2>
 
-            <CategoriesNavigation handleItemOnClick={(category) => fetchRecipes([category])} />
+            <div className="px-3">
+                <CategoriesNavigation handleItemOnClick={(category) => fetchRecipes([category])} />
+            </div>
 
             {recipes.length > 0 && <>
                 <h2 className="text-2xl font-semibold border-b border-leaf-green w-fit pr-3 mt-10 mb-5">Recipes of {selectedCategory.name}</h2>
