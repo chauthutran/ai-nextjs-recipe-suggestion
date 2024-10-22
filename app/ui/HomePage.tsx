@@ -4,9 +4,13 @@ import React, { useEffect } from 'react';
 import CategoriesNavigation from './homePage/CategoriesNavigation';
 import FindRecipes from './homePage/FindRecipes';
 import FeaturedRecipeList from './homePage/FeaturedRecipeList';
+import { useApp } from '@/contexts/AppContext';
+import * as Constant from '@/lib/constant';
 
 
 export default function HomePage() {
+
+	const { setAppPage } = useApp();
 
     return (
         <div className="flex flex-col pl-5">
@@ -24,14 +28,14 @@ export default function HomePage() {
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">Featured Recipes</h2>
+                    <h2 className="text-2xl font-semibold mb-4 border-b border-leaf-green w-fit pr-3">Featured Recipes</h2>
                     <FeaturedRecipeList />
 
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-2xl font-semibold">Categories Navivation</h2>
-                    <CategoriesNavigation />
+                    <h2 className="text-2xl font-semibold mb-4 border-b border-leaf-green w-fit pr-3">Categories Navivation</h2>
+                    <CategoriesNavigation handleItemOnClick={(category) => setAppPage(Constant.PAGE_RECIPES_BY_CATEGORY, category)} />
                 </div>
 
             </main>
