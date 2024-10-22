@@ -26,6 +26,28 @@ body {
   }
 }
 
+/* Customize the scrollbar width and appearance */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 12px; /* Adjust the width to make it bigger */
+}
+
+/* Customize the scrollbar track */
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Customize track color */
+}
+
+/* Customize the scrollbar thumb */
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #bdbdbd; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+  border: 2px solid #f5f5f5; /* Adds some space around the thumb */
+}
+
+/* Change color when hovered */
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
 .font-afacad-flux {
   font-family: "Afacad Flux", sans-serif;
   font-optical-sizing: auto;
