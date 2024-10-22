@@ -107,8 +107,9 @@ export const createRecipeModel = (
 	});
 
 	// Compile the model
+	const optimizer = tf.train.adam(0.001); // Adjust learning rate as needed
 	model.compile({
-		optimizer: "adam",
+		optimizer: optimizer,
 		loss: {
 			recipeOutput: "categoricalCrossentropy",
 			categoryOutput: "categoricalCrossentropy",

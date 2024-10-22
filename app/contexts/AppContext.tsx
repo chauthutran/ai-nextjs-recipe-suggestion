@@ -10,8 +10,8 @@ import { createRecipeModel, trainRecipeModel } from '@/lib/tensorflow/model';
 
 
 interface AppContextProps {
-	appPage: string;
-	setAppPage: (pageName: string) => void;
+	appPage: JSONObject;
+	setAppPage: (pageName: string, data?: JSONObject | null) => void;
 
 	ingredients: string[] | null;
 	categories: JSONObject[] | null;
@@ -28,8 +28,8 @@ const AppContext = createContext<AppContextProps>({
 	recipes: null,
 	model: null,
 	
-	appPage: Constant.PAGE_HOME,
-	setAppPage: (pageName: String) => {},
+	appPage: {name: Constant.PAGE_HOME, data: null},
+	setAppPage: (pageName: String, data?: JSONObject | null) => {},
 
 	processStatus: "",
 	error: null
@@ -45,7 +45,7 @@ export const useApp = (): AppContextProps => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-	const [appPage, setAppPage] = useState<string>(Constant.PAGE_HOME);
+	const [appPage, setAppPage] = useState<{ name: string; data?: JSONObject | null }>({ name: Constant.PAGE_HOME, data: null });
 
 	const [model, setModel] = useState<tf.LayersModel | null>(null);
     const [ingredients, setIngredients] = useState<string[] | null>(null);
@@ -69,6 +69,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 			loadModel();
 		}
     }, [ingredients, categories, recipes]);
+
+	// Modify your setCurrentPage usage to pass the entire object
+	const goToPage = (name: string, data: JSONObject | null = null) => {
+		setAppPage({ name, data });
+	};
 
 
 	const fetchIngredients = async () => {
@@ -140,7 +145,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
 
 	return (
-		<AppContext.Provider value={{appPage, setAppPage, processStatus, error: error, ingredients, categories, recipes, model }}>
+		<AppContext.Provider value={{appPage, setAppPage: goToPage, processStatus, error: error, ingredients, categories, recipes, model }}>
 			{children}
 		</AppContext.Provider>
 	);

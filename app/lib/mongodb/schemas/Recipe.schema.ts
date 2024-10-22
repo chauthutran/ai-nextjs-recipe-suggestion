@@ -22,6 +22,12 @@ const RecipeSchema = new mongoose.Schema({
         type: [String], // Array for multiple dietary restrictions
         enum: ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free'], // Example restrictions
     },
+    ratings: [
+        {
+            user: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
+            rating: { type: Number, required: true, min: 1, max: 5 }, // Assuming ratings are between 1 and 5
+        },
+    ],
     createdAt: {type: Date, default: new Date()}
 },
 {
