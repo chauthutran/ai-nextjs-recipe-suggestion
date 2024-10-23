@@ -31,14 +31,9 @@ export default function AppWrapper() {
 {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.importIngredients() }>Import Ingredients</button> */}
 {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateMealTypes() }>Update MealTypes</button> */}
 {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateDietaryRestrictions() }>Update updateDietaryRestrictions</button>
-
 <button className='bg-blue-500 mr-10' onClick={() => dbService.generateUsers() }>Add Users</button> */}
-
-
 {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateRatings() }>Update Rating</button> */}
-
-
-
+{/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateSaves() }>Update Saves for recipes</button> */}
 
 			{appPage.name == Constant.PAGE_HOME && <HomePage />}
 

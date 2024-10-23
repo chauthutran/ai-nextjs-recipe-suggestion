@@ -81,7 +81,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 		setError(null);
 
 		const response: JSONObject = await dbService.fetchIngredients();
-		console.log(response);
 		if (response.status != "success")  {
 			setProcessStatus(Constant.RESPONSE_INGREDIENT_FAILURE);
 			setError(response.message);

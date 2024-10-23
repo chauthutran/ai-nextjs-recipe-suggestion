@@ -3,7 +3,7 @@
 import { JSONObject } from "../definations";
 import connectToDatabase from "./db";
 import User from "./schemas/User.schema";
-import * as Encrypt from "./encryptPassword";
+import * as Encrypt from "../../contexts/encryptPassword";
 import * as Utils from "@/lib/utils";
 
 

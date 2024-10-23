@@ -4,6 +4,8 @@ import { JSONObject } from "@/lib/definations";
 import { useEffect, useState } from "react";
 import * as dbService from "@/lib/mongodb";
 import Image from "next/image";
+import RecipeActionBar from "../recipe/RecipeActionBar";
+
 
 export default function FeaturedRecipeList() {
     const [featuredRecipes, setFeaturedRecipes] = useState<JSONObject>([]);
@@ -24,7 +26,7 @@ export default function FeaturedRecipeList() {
         getTopPicks();
     }, []);
 
-
+    
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {errMsg !== "" && <p>{errMsg}</p>}
@@ -45,6 +47,7 @@ export default function FeaturedRecipeList() {
                         />}
 
                     <h3 className="text-xl font-bold">{recipe.name}</h3>
+                    <RecipeActionBar data={recipe} />
                     <p className="text-gray-500 text-sm mt-2">Created at: {new Date(recipe.
                         createdAt).toLocaleString()}</p>
                 </div>

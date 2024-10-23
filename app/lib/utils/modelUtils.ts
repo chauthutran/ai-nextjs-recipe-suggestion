@@ -10,6 +10,10 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 	const categoryArray = convertCategoryToFeatures(inputText, categoryNames);
 	const mealTypeArray = convertMealTypeToFeatures(inputText, Constant.MEAL_TYPES);
 	const dietaryRestrictionArray = convertDietaryRestrictionToFeatures( inputText, Constant.DIETARY_RESTRICTIONS);
+console.log("====== ingredientArray", ingredientArray);
+console.log("categoryArray", categoryArray);
+console.log("mealTypeArray", mealTypeArray);
+console.log("dietaryRestrictionArray", dietaryRestrictionArray);
 
 	// Create tensors
 	const ingredientTensor = tf.tensor2d(
@@ -36,8 +40,19 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 		mealTypeTensor,
 		dietaryRestrictionTensor,
 	]) as tf.Tensor[];
+
+	// const array = predictions.dataSync();
+	// 	const predictedRecipes = getTopPredictions(
+	// 		Array.from(array),
+	// 		10,
+	// 		recipes!
+	// 	);
+	// 	return predictedRecipes;
+
+	
 	// Get the recipe output tensor
 	const recipeOutput = predictions[0]; // Recipe predictions
+	
 	const categoryOutput = predictions[1]; // Category predictions
 	const mealTypeOutput = predictions[2]; // Mealtype predictions
 	const dietaryRestrictionOutput = predictions[3]; // dietaryRestriction predictions
@@ -48,9 +63,10 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 	const mealTypePredictions = await mealTypeOutput.data();
 	const dietaryRestrictionPredictions = await dietaryRestrictionOutput.data();
 
+	console.log("--- recipePredictions" , Array.from(recipePredictions));
 	const predictedRecipes = getTopPredictions(
 		Array.from(recipePredictions),
-		10,
+		recipePredictions.length,
 		recipes!
 	);
 	const predictedCategories = getTopPredictions(
@@ -71,11 +87,11 @@ export const preditRecipes = async(inputText: string, ingredients: string[], cat
 
     const filterRecipes = predictedRecipes.filter((recipe: JSONObject) => 
         recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
-        // && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
+        && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
         && recipe.dietaryRestrictions.filter((item: string) => preditedDietaryRestrictions.includes(item)).length > 0
     );
 
-    return filterRecipes;
+    return filterRecipes.slice(0,10);
 };
 
 

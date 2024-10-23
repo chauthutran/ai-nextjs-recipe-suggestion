@@ -28,6 +28,9 @@ const RecipeSchema = new mongoose.Schema({
             rating: { type: Number, required: true, min: 1, max: 5 }, // Assuming ratings are between 1 and 5
         },
     ],
+    saves: [
+       { type: mongoose.Types.ObjectId, ref: 'User', required: true },
+    ],
     createdAt: {type: Date, default: new Date()}
 },
 {

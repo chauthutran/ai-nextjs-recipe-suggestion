@@ -259,6 +259,37 @@ export async function updateRatings() {
     }
 }
 
+export async function updateSaves() {
+    try {
+        await connectToDatabase();
+
+		const userIds = await User.find({});
+		const userIdList = userIds.map((user) => user._id);
+
+		const recipes = await Recipe.find({});
+
+		for( let i=0; i<recipes.length; i++ ) {
+			const recipe = recipes[i];
+			const userListNo = getRandomNumber(0,49);
+			const userListIdexes: number[] = getRandomUniqueNumbers(0,49, userListNo );
+// console.log("----userListNo", userListNo)
+// console.log("userListIdexes", userListIdexes)
+			const saves: JSONObject[] = []; 
+			for( var j=0; j<userListIdexes.length; j++ ) {
+				const userId = userIdList[userListIdexes[j]];
+				saves.push(new mongoose.Types.ObjectId(userId));
+				// console.log({user: new mongoose.Types.ObjectId(userId), rating: rating})
+			}
+
+			await Recipe.updateOne({ _id: recipe._id }, { saves: saves });
+		}
+		console.log("Uploaded Saves");
+	} catch (error: any) {
+        console.log("Uploaded ERROR",  error.message);
+    }
+}
+
+
 
 export async function getRecipesWithoutCategories() {
     try {

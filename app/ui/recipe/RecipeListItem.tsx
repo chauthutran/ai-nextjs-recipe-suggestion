@@ -32,7 +32,8 @@ export default function RecipeListItem({data}: {data: JSONObject}) {
                 />}
                 <div className="mt-auto my-2 space-y-1">
                     <h2 className="text-xl font-semibold">{data.name}</h2>
-                    <p className="text-sm bottom-0">Categories : {categoryNames}</p>
+                    <p className="text-sm bottom-0">Categories : {categoryNames.join(", ")}</p>
+                    <p className="text-sm bottom-0">dietaryRestrictions : {data.dietaryRestrictions.join(", ")}</p>
                     <p className="text-gray-500 text-sm bottom-0">Created at: {new Date(data.
                         createdAt).toLocaleString()}</p>
                     <div className="pt-2">

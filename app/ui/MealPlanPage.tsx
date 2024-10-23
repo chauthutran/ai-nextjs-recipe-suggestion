@@ -6,7 +6,7 @@ import * as tf from '@tensorflow/tfjs';
 import { createRecipeModel, trainRecipeModel } from '@/lib/tensorflow/model';
 import { useApp } from "@/contexts/AppContext";
 import SpinningIcon from "./basics/SpinningIcon";
-import IngredientFilter from "./layout/IngredientFilter";
+import IngredientFilter from "./recipe/IngredientFilter";
 import * as Utils from "@/lib/utils";
 import MealPreferences from "./layout/MealPreferences";
 import * as Constant from "@/lib/constant";
