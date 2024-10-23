@@ -110,17 +110,18 @@ export const createRecipeModel = (
 	model.compile({
 		optimizer: optimizer,
 		loss: {
-			recipeOutput: "categoricalCrossentropy",
-			categoryOutput: "categoricalCrossentropy",
-			mealTypeOutput: "categoricalCrossentropy",
-			dietaryRestrictionOutput: "categoricalCrossentropy",
+			recipeOutput: "categoricalCrossentropy",  // Recipes are multi-class
+			categoryOutput: "categoricalCrossentropy", // Categories are multi-class
+			mealTypeOutput: "categoricalCrossentropy", // Multi-label for meal types
+			dietaryRestrictionOutput: "categoricalCrossentropy" // Multi-label for dietary restrictions
 		},
-		metrics: {
-			recipeOutput: "accuracy",
-			categoryOutput: "accuracy",
-			mealTypeOutput: "accuracy",
-			dietaryRestrictionOutput: "accuracy",
-		}
+		// metrics: {
+		// 	recipeOutput: "accuracy",
+		// 	categoryOutput: "accuracy",
+		// 	mealTypeOutput: "accuracy",
+		// 	dietaryRestrictionOutput: "accuracy",
+		// }
+		metrics: ["accuracy"]
 	});
 
 	// // Compile the model

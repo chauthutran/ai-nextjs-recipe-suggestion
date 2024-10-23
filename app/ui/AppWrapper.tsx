@@ -23,7 +23,7 @@ export default function AppWrapper() {
 	const { appPage } = useApp();
 
 	return (
-		<div className="my-5">
+		<div className="my-5 mx-5">
 			
             {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateImages() }>Update Images</button> */}
             {/* <button className='bg-blue-500 mr-10' onClick={() => dbService.updateCategories() }>Update Categories</button>

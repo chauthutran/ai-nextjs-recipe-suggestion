@@ -15,7 +15,7 @@ export default function HomePage() {
     const { user } = useUser();
 
     return (
-        <div className="flex flex-col pl-5">
+        <div className="flex flex-col">
 
             <main className="flex-grow">
                 <div className="space-y-1 mb-6 text-leaf-green">

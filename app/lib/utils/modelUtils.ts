@@ -41,6 +41,12 @@ console.log("dietaryRestrictionArray", dietaryRestrictionArray);
 		dietaryRestrictionTensor,
 	]) as tf.Tensor[];
 
+	// const predictions = model.predict([
+	// 	ingredientTensor,
+	// 	categoryTensor,
+	// 	mealTypeTensor,
+	// 	dietaryRestrictionTensor,
+	// ]) as tf.Tensor
 	// const array = predictions.dataSync();
 	// 	const predictedRecipes = getTopPredictions(
 	// 		Array.from(array),
@@ -84,6 +90,19 @@ console.log("dietaryRestrictionArray", dietaryRestrictionArray);
 		1,
 		Constant.DIETARY_RESTRICTIONS
 	);
+console.log("====== predictedCategories", predictedCategories);
+console.log("predictedMealTypes", predictedMealTypes);
+console.log("preditedDietaryRestrictions", preditedDietaryRestrictions);
+
+// // Post-process the predictions to select meal types above the threshold (e.g., 0.5)
+// const threshold = 0.01;
+
+// const predictedMealTypes1 = Array.from(mealTypePredictions).map((probability: any, index: any) => {
+//   return probability > threshold ? Constant.MEAL_TYPES[index] : null;
+// }).filter(mealType => mealType !== null);
+
+// console.log("Predicted meal types:", predictedMealTypes1);
+
 
     const filterRecipes = predictedRecipes.filter((recipe: JSONObject) => 
         recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
@@ -162,10 +181,8 @@ export const preditMealPlan = async(inputPreferences: JSONObject, ingredients: s
 		1,
 		Constant.DIETARY_RESTRICTIONS
 	);
-console.log("==== predictedRecipes:", predictedRecipes);
-console.log("predictedCategories:", predictedCategories);
-console.log("predictedMealTypes:", predictedMealTypes);
-console.log("preditedDietaryRestrictions:", preditedDietaryRestrictions);
+	
+	console.log();
     const filterRecipes = predictedRecipes.filter((recipe: JSONObject) => 
         recipe.categories.filter((item: JSONObject) => predictedCategories.includes(item.name)).length > 0
         && recipe.mealTypes.filter((item: string) => predictedMealTypes.includes(item)).length > 0
