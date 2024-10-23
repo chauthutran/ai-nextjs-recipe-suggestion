@@ -2,7 +2,7 @@ import { JSONObject } from "@/lib/definations";
 import { useEffect, useState } from "react";
 import * as dbService from "@/lib/mongodb";
 import { useCategory } from "@/contexts/CategoryContext";
-import ReceipeList from "./recipeList/RecipeList";
+import RecipeList from "./recipe/RecipeList";
 import { useApp } from "@/contexts/AppContext";
 import CategoriesNavigation from "./homePage/CategoriesNavigation";
 
@@ -17,10 +17,11 @@ export default function RecipesByCategoryPage() {
 
     const fetchRecipes = async( filterCategories: JSONObject[] ) => {
         setLoading(true);
+        setSelectedCategory(filterCategories[0]);
+        
         const filterCategoryIds = filterCategories.map(item => item._id);
         const response = await dbService.fetchRecipes(filterCategoryIds);
         if( response.status == "success" ) {
-            setSelectedCategory(filterCategories[0]);
             setRecipes( response.data );
         }
         else {
@@ -51,7 +52,7 @@ export default function RecipesByCategoryPage() {
                     {selectedCategory.icon && <div dangerouslySetInnerHTML={{ __html: selectedCategory.icon.replace('<svg', '<svg width="32" height="32"'), }} />}
                     <div>Recipes of {selectedCategory.name}</div>
                 </h2>
-                {loading ? <div>Loading ...</div> : <ReceipeList data={recipes} />}
+                {loading ? <div>Loading ...</div> : <RecipeList data={recipes} />}
                 
             </>}
         </div>

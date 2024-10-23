@@ -34,7 +34,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4 border-b border-leaf-green w-fit pr-3">Categories Navivation</h2>
+                    <h2 className="text-2xl font-semibold mb-4 border-b border-leaf-green w-fit pr-3">Categories Navigation</h2>
                     <CategoriesNavigation handleItemOnClick={(category) => setAppPage(Constant.PAGE_RECIPES_BY_CATEGORY, category)} />
                 </div>
 

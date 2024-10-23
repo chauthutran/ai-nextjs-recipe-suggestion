@@ -6,12 +6,12 @@ import { createRecipeModel, trainRecipeModel } from '@/lib/tensorflow/model';
 import { useIngredient } from '@/contexts/IngredientContext';
 import { JSONObject } from '@/lib/definations';
 import { useRecipe } from '@/contexts/RecipeContext';
-import RecipeDetails from './recipeList/RecipeDetails';
+import RecipeDetails from './recipe/RecipeDetails';
 import SpinningIcon from './basics/SpinningIcon';
 import { GiSolidLeaf } from 'react-icons/gi';
 import { SiLeaflet } from 'react-icons/si';
 import Image from 'next/image';
-import ReceipeList from './recipeList/RecipeList';
+import RecipeList from './recipe/RecipeList';
 import { useCategory } from '@/contexts/CategoryContext';
 import * as Utils from "@/lib/utils";
 import * as Constant from "@/lib/constant";
@@ -109,7 +109,7 @@ export default function RecipeSearchPage() {
                     {/* {predictedRecipes.map((recipe: JSONObject) => (
                         <RecipeDetails key={`predit_${recipe._id}`} data={recipe} />
                     ))} */}
-                    <ReceipeList data={predictedRecipes} />
+                    <RecipeList data={predictedRecipes} />
                 </div>
             )}
         </>

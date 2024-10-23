@@ -10,7 +10,7 @@ import IngredientFilter from "./layout/IngredientFilter";
 import * as Utils from "@/lib/utils";
 import MealPreferences from "./layout/MealPreferences";
 import * as Constant from "@/lib/constant";
-import ReceipeList from "./recipeList/RecipeList";
+import RecipeList from "./recipe/RecipeList";
 
 
 export default function MealPlanPage() {
@@ -82,7 +82,7 @@ export default function MealPlanPage() {
 
             <button className="px-3 py-1 bg-leaf-green" onClick={() => predictRecipe()}>Run</button>
 
-            {predictedRecipes !== null && <ReceipeList data={predictedRecipes} />}
+            {predictedRecipes !== null && <RecipeList data={predictedRecipes} />}
         </>
     )
 }
